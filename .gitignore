@@ -1,0 +1,23 @@
+# Entorno
+.venv/
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Herramientas
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Salidas generadas
+output/
+
+# Editor
+.vscode/*
+!.vscode/settings.json
