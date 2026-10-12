@@ -5,8 +5,13 @@ producen cortes c_1 < … < c_N sobre la oscuridad; el nivel de una celda es la 
 cortes ≤ su oscuridad. Así, celdas con el mismo valor siempre caen en el mismo nivel.
 """
 
+from dataclasses import dataclass
+
 import numpy as np
 import numpy.typing as npt
+
+from mosaico_tramas.avisos import Aviso, CodigoAviso
+from mosaico_tramas.config import MetodoCuantizacion, MosaicoConfig
 
 BINS = 4096
 
@@ -167,3 +172,70 @@ def reducir_ruido(niveles: Niveles, umbral: int, max_pasadas: int = 3) -> Nivele
             siguiente[filas, cols][componente] = nuevo
         actual = siguiente
     return actual
+
+
+@dataclass(frozen=True)
+class Distribucion:
+    """Cantidad y porcentaje de celdas por nivel 0…N (RF3.6)."""
+
+    conteos: tuple[int, ...]
+    porcentajes: tuple[float, ...]
+
+    @classmethod
+    def de_niveles(cls, niveles: Niveles, n: int) -> "Distribucion":
+        conteos = np.bincount(niveles.ravel(), minlength=n + 1)
+        porcentajes = conteos / niveles.size * 100.0
+        return cls(tuple(int(c) for c in conteos), tuple(float(p) for p in porcentajes))
+
+
+@dataclass(frozen=True)
+class ResultadoCuantizacion:
+    niveles: Niveles
+    cortes: Cortes
+    distribucion: Distribucion
+    avisos: tuple[Aviso, ...]
+
+
+def cuantizar(d: Matriz, config: MosaicoConfig) -> ResultadoCuantizacion:
+    """Aplica método → límite de oscuros → ruido → límite de nuevo (RF3.8) y reporta."""
+    n = config.n_simbolos
+    limite = config.max_oscuros_pct if config.limitar_oscuros else None
+
+    match config.metodo:
+        case MetodoCuantizacion.QUANTILES:
+            cortes = cortes_quantiles(d, n, limite)
+        case MetodoCuantizacion.KMEANS:
+            cortes = cortes_kmeans(d, n)
+        case MetodoCuantizacion.UNIFORM:
+            cortes = cortes_uniformes(n)
+
+    niveles = aplicar_cortes(d, cortes)
+    if limite is not None:
+        niveles = limitar_oscuros(niveles, d, n, limite)
+    if config.reduccion_ruido:
+        niveles = reducir_ruido(niveles, config.umbral_ruido)
+        if limite is not None:
+            # El ruido puede volver a superar el límite (RF3.8)
+            niveles = limitar_oscuros(niveles, d, n, limite)
+
+    distribucion = Distribucion.de_niveles(niveles, n)
+    return ResultadoCuantizacion(niveles, cortes, distribucion, _avisos(distribucion, n, limite))
+
+
+def _avisos(distribucion: Distribucion, n: int, limite: float | None) -> tuple[Aviso, ...]:
+    """Aviso por cada nivel con menos de la mitad de la cuota ideal (RF3.7)."""
+    ideal = 100.0 / (n + 1)
+    avisos: list[Aviso] = []
+    for nivel, pct in enumerate(distribucion.porcentajes):
+        recortado_a_proposito = nivel == n and limite is not None and limite < ideal
+        if pct >= 0.5 * ideal or recortado_a_proposito:
+            continue
+        nombre = "la celda vacía (nivel 0)" if nivel == 0 else f"el nivel {nivel}"
+        avisos.append(
+            Aviso(
+                CodigoAviso.NIVEL_INFRAUTILIZADO,
+                f"{nombre.capitalize()} quedó con {pct:.1f} % de las celdas "
+                f"(lo esperable es ~{ideal:.1f} %): ese tono casi no va a aparecer.",
+            )
+        )
+    return tuple(avisos)

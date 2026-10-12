@@ -68,7 +68,7 @@
   - Cubre: RF3.4.
   - Test (**CA11**): con umbral 2 no queda ningún componente de tamaño 1. Un bloque grande no se toca. Los desempates siguen el diseño y el resultado es determinista.
 
-- [ ] **T14 — Distribución y orquestación de la cuantización.** `cuantizar(d, config) -> (niveles, Distribucion, avisos)`, con el orden de RF3.8 y el aviso de nivel infrautilizado.
+- [x] **T14 — Distribución y orquestación de la cuantización.** `cuantizar(d, config) -> (niveles, Distribucion, avisos)`, con el orden de RF3.8 y el aviso de nivel infrautilizado.
   - Cubre: RF3.6, RF3.7 y RF3.8.
   - Test (**CA10**, segunda parte): con ruido y límite activos, el límite se sigue cumpliendo al final. Los conteos suman el total, y el aviso aparece en una imagen con un fondo plano enorme y no aparece en el degradado. No se avisa por el nivel N cuando fue recortado a propósito.
 

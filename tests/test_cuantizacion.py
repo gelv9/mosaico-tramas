@@ -4,12 +4,14 @@ import numpy as np
 import numpy.typing as npt
 import pytest
 
-from mosaico_tramas.config import Recorte
+from mosaico_tramas.avisos import CodigoAviso
+from mosaico_tramas.config import MosaicoConfig, Recorte
 from mosaico_tramas.cuantizacion import (
     aplicar_cortes,
     cortes_kmeans,
     cortes_quantiles,
     cortes_uniformes,
+    cuantizar,
     limitar_oscuros,
     reducir_ruido,
 )
@@ -216,3 +218,58 @@ def test_reduccion_de_ruido_determinista(png_foto: bytes):
     d = _oscuridad(png_foto)
     niveles = aplicar_cortes(d, cortes_quantiles(d, 6))
     assert np.array_equal(reducir_ruido(niveles, 3), reducir_ruido(niveles, 3))
+
+
+# --- T14: distribución y orquestación ---
+
+
+@pytest.mark.parametrize("metodo", ["quantiles", "kmeans", "uniform"])
+def test_ca10_limite_se_cumple_con_ruido_activo(metodo: str, png_foto: bytes):
+    d = _oscuridad(png_foto)
+    config = MosaicoConfig.crear(
+        n_simbolos=6, metodo=metodo, limitar_oscuros=True, max_oscuros_pct=5, umbral_ruido=4
+    )
+    resultado = cuantizar(d, config)
+    assert (resultado.niveles == 6).sum() <= int(0.05 * d.size)
+    assert resultado.distribucion.porcentajes[6] <= 5.0
+
+
+def test_distribucion_suma_el_total(png_foto: bytes):
+    d = _oscuridad(png_foto)
+    resultado = cuantizar(d, MosaicoConfig.crear(n_simbolos=7))
+    dist = resultado.distribucion
+    assert len(dist.conteos) == 8
+    assert sum(dist.conteos) == d.size
+    assert sum(dist.porcentajes) == pytest.approx(100.0)
+
+
+def test_aviso_nivel_infrautilizado():
+    # 80 % de celdas idénticas (blancas): los demás niveles quedan con muy pocas celdas
+    d = np.zeros((50, 50), dtype=np.float32)
+    d.ravel()[-500:] = np.linspace(0.01, 1.0, 500)
+    config = MosaicoConfig.crear(n_simbolos=6, reduccion_ruido=False, limitar_oscuros=False)
+    resultado = cuantizar(d, config)
+    codigos = {a.codigo for a in resultado.avisos}
+    assert CodigoAviso.NIVEL_INFRAUTILIZADO in codigos
+    assert any("nivel 3" in a.mensaje for a in resultado.avisos)
+
+
+def test_sin_avisos_en_el_degradado(png_degradado: bytes):
+    d = _oscuridad(png_degradado)
+    config = MosaicoConfig.crear(n_simbolos=7, reduccion_ruido=False, limitar_oscuros=False)
+    assert cuantizar(d, config).avisos == ()
+
+
+def test_no_avisa_por_el_nivel_n_recortado_a_proposito(png_degradado: bytes):
+    d = _oscuridad(png_degradado)
+    # 2 % < la mitad de la cuota ideal (7,1 % para N = 6): recortado a propósito, sin aviso
+    config = MosaicoConfig.crear(n_simbolos=6, limitar_oscuros=True, max_oscuros_pct=2)
+    resultado = cuantizar(d, config)
+    assert resultado.distribucion.porcentajes[6] <= 2.0
+    assert not any("nivel 6" in a.mensaje for a in resultado.avisos)
+
+
+def test_cuantizar_determinista(png_foto: bytes):
+    d = _oscuridad(png_foto)
+    config = MosaicoConfig.crear(metodo="kmeans")
+    assert np.array_equal(cuantizar(d, config).niveles, cuantizar(d, config).niveles)
