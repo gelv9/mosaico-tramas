@@ -19,7 +19,7 @@ from mosaico_tramas.papel import (
 )
 
 N_MIN = 5
-N_MAX = 10
+N_MAX = 6
 
 
 class MetodoCuantizacion(StrEnum):
@@ -84,7 +84,7 @@ class MosaicoConfig(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    n_simbolos: int = 7
+    n_simbolos: int = 6
     columnas: int = 40
     metodo: MetodoCuantizacion = MetodoCuantizacion.QUANTILES
     reduccion_ruido: bool = True

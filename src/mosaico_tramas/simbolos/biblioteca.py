@@ -1,5 +1,8 @@
 """Catálogo de símbolos candidatos (design.md §4.2).
 
+Solo rayas, el punto central y la celda llena (decisión del checkpoint A): fáciles de trazar
+o de rellenar a mano, con estética de tramado a pluma.
+
 Convención: coordenadas normalizadas con y hacia abajo. Una diagonal "/" va de la esquina
 inferior izquierda (0, 1) a la superior derecha (1, 0), es decir, x + y = c. Una "\\" cumple
 y − x = c. Las líneas van de borde a borde para que en zonas parejas el tramado sea continuo.
@@ -34,19 +37,11 @@ def vertical(x: float) -> Linea:
     return Linea((x, 0.0), (x, 1.0))
 
 
-def bloque(lado: float) -> Poligono:
-    """Cuadrado relleno centrado."""
-    a = (1 - lado) / 2
-    b = 1 - a
-    return Poligono(((a, a), (b, a), (b, b), (a, b)))
-
-
 # Posiciones con espaciado parejo también entre celdas vecinas (el tramado no se corta)
 _DOS = (0.25, 0.75)
 _TRES = (1 / 6, 0.5, 5 / 6)
 _DIAG_X2 = (0.5, 1.0, 1.5)  # doble densidad de diagonales
 _DIAG_X3 = (1 / 3, 2 / 3, 1.0, 4 / 3, 5 / 3)  # triple densidad
-_TRIANGULO = Poligono(((0.0, 0.0), (0.0, 1.0), (1.0, 1.0)))  # ◣ mitad inferior izquierda
 
 
 def _s(id_: str, familia: str, nombre_en: str, *primitivas: Linea | Punto | Poligono) -> Simbolo:
@@ -100,38 +95,6 @@ BIBLIOTECA: tuple[Simbolo, ...] = (
         vertical(0.5),
         diagonal(1.0),
         antidiagonal(0.0),
-    ),
-    _s("bloque50", "bloque", "small square", bloque(0.5)),
-    _s("bloque60", "bloque", "square", bloque(0.6)),
-    _s("triangulo", "triangulo", "half triangle", _TRIANGULO),
-    # Triángulo + 2 rayas paralelas a la hipotenusa, solo en la mitad libre (y < x)
-    _s(
-        "tri_rayas",
-        "triangulo_rayado",
-        "half triangle with lines",
-        _TRIANGULO,
-        antidiagonal(-1 / 3),
-        antidiagonal(-2 / 3),
-    ),
-    _s(
-        "mitad_rayas",
-        "mitad",
-        "bottom half with lines",
-        Poligono(((0.0, 0.5), (1.0, 0.5), (1.0, 1.0), (0.0, 1.0))),
-        horizontal(1 / 6),
-        horizontal(2 / 6),
-    ),
-    _s(
-        "tres_cuartos",
-        "tres_cuartos",
-        "three quarters",
-        Poligono(((0.0, 0.0), (0.5, 0.0), (0.5, 0.5), (1.0, 0.5), (1.0, 1.0), (0.0, 1.0))),
-    ),
-    _s(
-        "esquina",
-        "esquina",
-        "solid with white corner",
-        Poligono(((0.0, 0.0), (0.5, 0.0), (1.0, 0.5), (1.0, 1.0), (0.0, 1.0))),
     ),
     _s("lleno", "lleno", "solid", Poligono(((0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)))),
 )

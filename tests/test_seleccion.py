@@ -3,12 +3,12 @@
 import pytest
 
 from mosaico_tramas.errores import ConfigInvalidaError, ErrorBibliotecaSimbolos
-from mosaico_tramas.simbolos.biblioteca import BIBLIOTECA, ID_LLENO, ID_PUNTO, POR_ID, bloque
+from mosaico_tramas.simbolos.biblioteca import BIBLIOTECA, ID_LLENO, ID_PUNTO, POR_ID, horizontal
 from mosaico_tramas.simbolos.primitivas import Simbolo
 from mosaico_tramas.simbolos.raster import cobertura
 from mosaico_tramas.simbolos.seleccion import DELTA_MIN, DELTA_MIN_0, elegir_simbolos
 
-RANGO_N = range(5, 11)
+RANGO_N = range(5, 7)
 
 
 @pytest.mark.parametrize("n", RANGO_N)
@@ -49,45 +49,41 @@ def test_determinista(n: int):
 
 
 def test_maximiza_el_salto_minimo():
-    # Con N = 5 hay mucho margen: el salto mínimo tiene que ser holgado (diseño: ~23,6 pp)
+    # Con N = 5 hay más margen que con N = 6: el salto mínimo tiene que ser holgado (~10,2 pp)
     coberturas = [cobertura(s) for s in elegir_simbolos(5)]
     saltos = [b - a for a, b in zip(coberturas, coberturas[1:], strict=False)]
-    assert min(saltos) > 20
+    assert min(saltos) > 10
 
 
-def test_resultado_de_diseno_para_n10():
-    ids = [s.id for s in elegir_simbolos(10)]
+def test_resultado_de_diseno_para_n6():
+    ids = [s.id for s in elegir_simbolos(6)]
     assert ids == [
         "punto",
         "cruz",
         "horiz3",
         "diag3",
         "reja2",
-        "triangulo",
-        "mitad_rayas",
-        "tres_cuartos",
-        "esquina",
         "lleno",
     ]
 
 
 def test_biblioteca_imposible_lanza_error():
-    # Solo dos candidatos intermedios muy parecidos: no alcanza para N = 5
+    # Solo dos candidatos intermedios con la misma cobertura: no alcanza para N = 5
     chica = (
         POR_ID[ID_PUNTO],
-        Simbolo("b40", "bloque_a", "a", (bloque(0.40),)),
-        Simbolo("b42", "bloque_b", "b", (bloque(0.42),)),
+        Simbolo("h_a", "familia_a", "a", (horizontal(0.5),)),
+        Simbolo("h_b", "familia_b", "b", (horizontal(0.25),)),
         POR_ID[ID_LLENO],
     )
     with pytest.raises(ErrorBibliotecaSimbolos, match="no permite armar 5 símbolos"):
         elegir_simbolos(5, chica)
 
 
-@pytest.mark.parametrize("n", [4, 11])
+@pytest.mark.parametrize("n", [4, 7])
 def test_n_fuera_de_rango(n: int):
-    with pytest.raises(ConfigInvalidaError, match="entre 5 y 10"):
+    with pytest.raises(ConfigInvalidaError, match="entre 5 y 6"):
         elegir_simbolos(n)
 
 
 def test_biblioteca_por_defecto_es_la_completa():
-    assert elegir_simbolos(7) == elegir_simbolos(7, BIBLIOTECA)
+    assert elegir_simbolos(6) == elegir_simbolos(6, BIBLIOTECA)

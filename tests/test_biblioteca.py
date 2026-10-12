@@ -23,13 +23,6 @@ COBERTURAS_DISENO = {
     "reja1": 26.5,
     "reja2": 38.3,
     "asterisco": 31.6,
-    "bloque50": 25.1,
-    "bloque60": 36.2,
-    "triangulo": 50.1,
-    "tri_rayas": 59.9,
-    "mitad_rayas": 64.3,
-    "tres_cuartos": 75.1,
-    "esquina": 87.5,
     "lleno": 100.0,
 }
 
@@ -71,6 +64,15 @@ def test_coordenadas_dentro_de_la_celda(simbolo):
 @pytest.mark.parametrize("simbolo", BIBLIOTECA, ids=lambda s: s.id)
 def test_cobertura_coincide_con_el_diseno(simbolo):
     assert cobertura(simbolo) == pytest.approx(COBERTURAS_DISENO[simbolo.id], abs=1.0)
+
+
+def test_solo_rayas_punto_y_celda_llena():
+    # Decisión del checkpoint A: el único relleno es la celda completa
+    for simbolo in BIBLIOTECA:
+        if simbolo.id == ID_LLENO:
+            continue
+        for primitiva in simbolo.primitivas:
+            assert not isinstance(primitiva, Poligono), simbolo.id
 
 
 def test_cada_simbolo_tiene_familia_y_nombre_en_ingles():

@@ -97,7 +97,7 @@ class PapelPersonalizado(BaseModel, frozen=True):
 
 
 class MosaicoConfig(BaseModel, frozen=True):
-    n_simbolos: int = 7  # 5..10 (RF1)
+    n_simbolos: int = 6  # 5..6 (RF1)
     columnas: int = 40  # 10..200 (RF4.1)
     metodo: MetodoCuantizacion = QUANTILES
     reduccion_ruido: bool = True
@@ -137,7 +137,7 @@ class MosaicoConfig(BaseModel, frozen=True):
 - **Medición de la cobertura (RF2.3):** rasterizado con OpenCV a 1000 × 1000 px, antialiasing y recorte a la celda; la cobertura es la media de la tinta. Se calcula una vez y se cachea con `lru_cache`. Ningún valor se carga a mano.
 - **Un solo origen de la geometría.** Las primitivas son la única fuente: tanto ReportLab como OpenCV dibujan a partir de ellas, así que la cobertura medida y lo que se imprime coinciden.
 
-### 4.2 Catálogo (23 candidatos, coberturas medidas con el prototipo)
+### 4.2 Catálogo (16 candidatos en 9 familias: solo rayas, punto y celda llena)
 
 Las líneas van de borde a borde de la celda y con **espaciado parejo también entre celdas vecinas**, para que en zonas parejas formen un tramado continuo, como en un grabado. Esto lo verifica un test geométrico (ver la corrección durante la T7).
 
@@ -158,16 +158,9 @@ Las líneas van de borde a borde de la celda y con **espaciado parejo también e
 | `reja1` | reja | `#` (a ¼ y ¾) | 4 | 26,5 % |
 | `reja2` | reja | reja densa (a ⅙, ½ y ⅚) | 6 | 38,2 % |
 | `asterisco` | asterisco | `+` + `X` | 4 | 31,6 % |
-| `bloque50` | bloque | cuadrado relleno centrado, de lado 0,5 | 1 | 25,1 % |
-| `bloque60` | bloque | cuadrado relleno centrado, de lado 0,6 | 1 | 36,2 % |
-| `triangulo` | triangulo | mitad inferior izquierda rellena (◣) | 1 | 50,1 % |
-| `tri_rayas` | triangulo_rayado | ◣ + 2 `\` paralelas a la hipotenusa, en la mitad libre | 3 | 59,9 % (corregido en T5: el prototipo cruzaba las rayas sobre el triángulo) |
-| `mitad_rayas` | mitad | mitad inferior rellena + 2 horizontales arriba | 3 | 64,3 % |
-| `tres_cuartos` | tres_cuartos | todo relleno salvo el cuadrante superior derecho | 1 | 75,1 % |
-| `esquina` | esquina | todo relleno salvo un triangulito en la esquina superior derecha | 1 | 87,5 % |
 | `lleno` | lleno | celda rellena | 1 | **100 %** |
 
-Todos los símbolos cumplen RF2.6: solo rectas, puntos y rellenos, como máximo 6 trazos y ningún detalle menor a 1 mm en una celda de 5 mm. Los rellenos parciales (`triangulo`, `tres_cuartos`, `esquina`) siguen una diagonal o el centro, que son referencias fáciles de ubicar a mano.
+Todos los símbolos cumplen RF2.6 y RF2.6a: solo rectas, el punto central y la celda llena, como máximo 6 trazos. *Checkpoint A:* se quitaron los rellenos parciales (bloque, triángulos, tres cuartos, esquina, mitad), porque repetidos se leían como mosaico geométrico y no como tramado a pluma.
 
 ### 4.3 Enmienda a RF2.4c (distinción de forma) — aprobada
 
@@ -178,10 +171,10 @@ Con el prototipo comprobé que la regla aprobada, **1 − IoU ≥ 0,35**, es **i
 ### 4.4 Algoritmo de selección del subconjunto (RF2.4 y RF2.5)
 
 ```
-entrada: N (5..10)
+entrada: N (5..6)
 fijos:   nivel 1 = punto, nivel N = lleno           (RF2.4e, RF2.4d)
 candidatos = biblioteca − {punto, lleno}, ordenados por (cobertura, id)
-para cada combinación C de N−2 candidatos:          # como mucho C(21,8) ≈ 203k; se poda por familia y gaps
+para cada combinación C de N−2 candidatos:          # como mucho C(14,4) = 1001; se poda por familia y gaps
     si hay familias repetidas en C → descartar
     secuencia = [punto, *C ordenada por cobertura, lleno]
     gaps = diferencias consecutivas de cobertura
@@ -195,12 +188,8 @@ elegir la mejor clave; si no hay ninguna → ErrorBibliotecaSimbolos (RF2.7)
 
 | N | gap mín. | niveles 1…N (resultado real de `elegir_simbolos`) |
 |---|---|---|
-| 5 | 23,6 | punto 2 · reja1 27 · triangulo 50 · tres_cuartos 75 · lleno 100 |
-| 6 | 15,2 | punto · aspa1 19 · bloque60 36 · tri_rayas 60 · tres_cuartos 75 · lleno |
-| 7 | 12,5 | punto · aspa1 19 · bloque60 36 · triangulo 50 · tres_cuartos 75 · esquina 88 · lleno |
-| 8 | 11,4 | punto · cruz 14 · bloque50 25 · reja2 38 · triangulo 50 · tres_cuartos 75 · esquina 88 · lleno |
-| 9 | 10,8 | punto · cruz 14 · bloque50 25 · aspa3 36 · triangulo 50 · mitad_rayas 64 · tres_cuartos 75 · esquina 88 · lleno |
-| 10 | 7,6 | punto · cruz 14 · horiz3 21 · diag3 29 · reja2 38 · triangulo 50 · mitad_rayas 64 · tres_cuartos 75 · esquina 88 · lleno |
+| 5 | 10,2 | punto 2 · cruz 14 · aspa2 28 · reja2 38 · lleno 100 |
+| 6 | 7,6 | punto 2 · cruz 14 · horiz3 21 · diag3 29 · reja2 38 · lleno 100 |
 
 ## 5. Preprocesamiento (`imagen.py`)
 
@@ -260,7 +249,7 @@ Es un bloque de alto fijo, calculable antes de dibujar:
 - Línea de instrucción: 9 pt + 4 pt de interlineado.
 - Entradas: una por nivel 1…N, y una más para la celda vacía si `marca_blanco` está activa. Cada entrada mide **32 mm × 14 mm** y contiene el número (10 pt), el símbolo a escala real (el lado de la celda) y el símbolo ampliado (10 mm).
 - Entradas por fila: `floor(ancho_util / 32 mm)`, por lo que en A4 vertical entran 5. La cantidad de filas es `ceil(entradas / por_fila)`.
-- `alto_leyenda = 6 mm (separación) + 4,6 mm (instrucción) + filas × 14 mm`. Por ejemplo, con N = 7 y la marca de blanco en A4 vertical: 8 entradas en 2 filas ≈ 38,6 mm.
+- `alto_leyenda = 6 mm (separación) + 4,6 mm (instrucción) + filas × 14 mm`. Por ejemplo, con N = 6 y la marca de blanco en A4 vertical: 7 entradas en 2 filas ≈ 38,6 mm.
 - Como el símbolo a escala real depende de la celda, se calcula después de fijarla. El alto de la entrada usa el máximo de los dos tamaños (10 mm), así que no hay dependencia circular.
 
 ### 7.3 Algoritmo
@@ -333,7 +322,7 @@ def empaquetar_zip(resultado: Resultado, nombre_base: str) -> bytes        # RF5
 
 ## 11. Hoja de muestra (`muestra.py`, RF2.8)
 
-`hoja_muestra(n: int | None) -> bytes` genera un PDF A4. Con un `n`, muestra los N símbolos elegidos con su número, su cobertura medida, una celda a 5 mm (escala de referencia) y otra a 20 mm. Con `None`, muestra la biblioteca completa agrupada por familia. Se usa en la Fase 5 con N = 5, 7 y 10.
+`hoja_muestra(n: int | None) -> bytes` genera un PDF A4. Con un `n`, muestra los N símbolos elegidos con su número, su cobertura medida, una celda a 5 mm (escala de referencia) y otra a 20 mm. Con `None`, muestra la biblioteca completa agrupada por familia. Se usa en la Fase 5 con N = 5 y 6.
 
 ## 12. Flujo de la UI (`ui/app.py`)
 
@@ -381,4 +370,4 @@ def empaquetar_zip(resultado: Resultado, nombre_base: str) -> bytes        # RF5
 | Sin scikit-learn | El k-means 1D sobre el histograma es propio, exacto y determinista. |
 | Rendimiento del PDF | Un path por nivel en la solución; la grilla con líneas largas y no con rectángulos por celda. |
 | Escala de la cobertura | Se mide con un trazo relativo (0,07). En celdas más grandes, la birome del comprador cubre proporcionalmente menos y los tonos se aclaran algo. Por eso se recomienda un fineliner de 0,3–0,5 mm. Esto se puede documentar en el listing. |
-| Tiempo de rasterizado de la cobertura | 23 símbolos a 1000 px, ~50 ms en total, una sola vez (cacheado). |
+| Tiempo de rasterizado de la cobertura | 16 símbolos a 1000 px, ~50 ms en total, una sola vez (cacheado). |
