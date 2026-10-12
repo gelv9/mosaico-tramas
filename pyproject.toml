@@ -46,3 +46,4 @@ ignore = ["ANN401"]
 testpaths = ["tests"]
 pythonpath = ["src"]
 addopts = "-ra"
+markers = ["slow: tests de rendimiento, dependen de la máquina"]

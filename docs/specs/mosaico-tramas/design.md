@@ -69,35 +69,53 @@ src/mosaico_tramas/
 ## 3. Modelo de configuración
 
 ```python
-class MetodoCuantizacion(StrEnum): QUANTILES = "quantiles"; KMEANS = "kmeans"; UNIFORM = "uniform"
-class Orientacion(StrEnum):        PORTRAIT = "portrait"; LANDSCAPE = "landscape"; AUTO = "auto"
-class Recorte(StrEnum):            FIT = "fit"; CENTER = "center"
-class UbicacionLeyenda(StrEnum):   BELOW = "below"; SEPARATE = "separate"
+class MetodoCuantizacion(StrEnum):
+    QUANTILES = "quantiles"
+    KMEANS = "kmeans"
+    UNIFORM = "uniform"
+
+
+class Orientacion(StrEnum):
+    PORTRAIT = "portrait"
+    LANDSCAPE = "landscape"
+    AUTO = "auto"
+
+
+class Recorte(StrEnum):
+    FIT = "fit"
+    CENTER = "center"
+
+
+class UbicacionLeyenda(StrEnum):
+    BELOW = "below"
+    SEPARATE = "separate"
+
 
 class PapelPersonalizado(BaseModel, frozen=True):
     ancho_mm: float  # 100..1200
-    alto_mm: float   # 100..1200
+    alto_mm: float  # 100..1200
+
 
 class MosaicoConfig(BaseModel, frozen=True):
-    n_simbolos: int = 7                    # 5..10 (RF1)
-    columnas: int = 40                     # 10..200 (RF4.1)
+    n_simbolos: int = 7  # 5..10 (RF1)
+    columnas: int = 40  # 10..200 (RF4.1)
     metodo: MetodoCuantizacion = QUANTILES
     reduccion_ruido: bool = True
-    umbral_ruido: int = 2                  # 2..20 (RF3.4)
+    umbral_ruido: int = 2  # 2..20 (RF3.4)
     limitar_oscuros: bool = True
-    max_oscuros_pct: float = 8.0           # 1..100 (RF3.5)
-    papeles: tuple[str, ...] = ("A4",)     # claves de REGISTRO_PAPELES o "CUSTOM"; 1 o más
+    max_oscuros_pct: float = 8.0  # 1..100 (RF3.5)
+    papeles: tuple[str, ...] = ("A4",)  # claves de REGISTRO_PAPELES o "CUSTOM"; 1 o más
     papel_personalizado: PapelPersonalizado | None = None  # obligatorio si "CUSTOM" está en papeles
     orientacion: Orientacion = AUTO
-    margen_mm: float = 12.7                # 5..40
+    margen_mm: float = 12.7  # 5..40
     recorte: Recorte = FIT
     leyenda: UbicacionLeyenda = BELOW
     incluir_solucion: bool = True
-    marca_blanco: bool = True              # RF7.1a
-    grilla_en_solucion: bool = False       # Q9
-    percentil_bajo: float = 2.0            # RP4; 0..49
-    percentil_alto: float = 98.0           # RP4; 51..100
-    png_lado_px: int = 2000                # 500..6000
+    marca_blanco: bool = True  # RF7.1a
+    grilla_en_solucion: bool = False  # Q9
+    percentil_bajo: float = 2.0  # RP4; 0..49
+    percentil_alto: float = 98.0  # RP4; 51..100
+    png_lado_px: int = 2000  # 500..6000
 ```
 
 **Mensajes en español.** Pydantic genera sus mensajes en inglés, así que los rangos **no** se declaran con `Field(ge=…)`. Cada campo con restricciones tiene un `field_validator(mode="before")` que valida el tipo y el rango, y lanza `ValueError` con el texto en español. Además, `MosaicoConfig.crear(**kwargs)` envuelve la `ValidationError` en una `ConfigInvalidaError` cuyo mensaje lista solo los textos en español. Por ejemplo, para RF1.3: *"La cantidad de símbolos debe ser un entero entre 5 y 10 (valor recibido: 4)."* Los valores `bool` y los `float` no enteros se rechazan en `n_simbolos`.

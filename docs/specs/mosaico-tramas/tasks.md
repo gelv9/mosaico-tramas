@@ -10,7 +10,7 @@
 
 ## Bloque A — Base y biblioteca de símbolos
 
-- [ ] **T1 — Errores y avisos.** `errores.py` (`MosaicoError`, `ConfigInvalidaError`, `ImagenInvalidaError`, `CeldaDemasiadoChicaError(mensaje, sugerencias)`, `ErrorBibliotecaSimbolos`) y `avisos.py` (`Aviso`, códigos).
+- [x] **T1 — Errores y avisos.** `errores.py` (`MosaicoError`, `ConfigInvalidaError`, `ImagenInvalidaError`, `CeldaDemasiadoChicaError(mensaje, sugerencias)`, `ErrorBibliotecaSimbolos`) y `avisos.py` (`Aviso`, códigos).
   - Cubre: base de RF1.3, RF4.6a, RF6.3, RF3.7 y RP6.
   - Test: `test_errores.py`. Las excepciones heredan de `MosaicoError`, el mensaje se conserva y `Aviso` es inmutable.
 
