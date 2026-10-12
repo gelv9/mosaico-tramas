@@ -5,7 +5,12 @@ import numpy.typing as npt
 import pytest
 
 from mosaico_tramas.config import Recorte
-from mosaico_tramas.cuantizacion import aplicar_cortes, cortes_quantiles
+from mosaico_tramas.cuantizacion import (
+    aplicar_cortes,
+    cortes_kmeans,
+    cortes_quantiles,
+    cortes_uniformes,
+)
 from mosaico_tramas.imagen import a_grilla, cargar_luminancia
 
 RANGO_N = range(5, 8)
@@ -86,3 +91,41 @@ def test_limite_mayor_a_la_cuota_ideal_no_cambia_nada(png_foto: bytes):
 def test_cuantiles_deterministas(png_foto: bytes):
     d = _oscuridad(png_foto)
     assert np.array_equal(cortes_quantiles(d, 7), cortes_quantiles(d, 7))
+
+
+# --- T11: k-means y uniforme ---
+
+
+def test_kmeans_determinista(png_foto: bytes):
+    d = _oscuridad(png_foto)
+    assert np.array_equal(cortes_kmeans(d, 7), cortes_kmeans(d, 7))
+
+
+def test_kmeans_encuentra_grupos_obvios():
+    # Tres grupos bien separados de oscuridad: 0,1 / 0,5 / 0,9
+    d = np.repeat(np.array([0.1, 0.5, 0.9], dtype=np.float32), 1000).reshape(30, 100)
+    cortes = cortes_kmeans(d, 2)
+    assert 0.1 < cortes[0] < 0.5 < cortes[1] < 0.9
+    niveles = aplicar_cortes(d, cortes)
+    assert np.bincount(niveles.ravel()).tolist() == [1000, 1000, 1000]
+
+
+@pytest.mark.parametrize("n", RANGO_N)
+def test_kmeans_sin_clusters_vacios(n: int, png_foto: bytes):
+    d = _oscuridad(png_foto)
+    cortes = cortes_kmeans(d, n)
+    assert len(cortes) == n
+    assert np.all(np.diff(cortes) > 0)
+    niveles = aplicar_cortes(d, cortes)
+    assert (np.bincount(niveles.ravel(), minlength=n + 1) > 0).all()
+
+
+def test_kmeans_con_menos_valores_que_clusters_no_falla():
+    d = np.array([[0.2, 0.8]] * 10, dtype=np.float32)
+    cortes = cortes_kmeans(d, 6)
+    assert len(cortes) == 6
+    assert np.all(np.diff(cortes) > 0)
+
+
+def test_uniforme():
+    assert np.allclose(cortes_uniformes(5), [1 / 6, 2 / 6, 3 / 6, 4 / 6, 5 / 6])

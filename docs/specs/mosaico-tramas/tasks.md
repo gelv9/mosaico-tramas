@@ -56,7 +56,7 @@
   - Cubre: RF3.1, RF3.2, RF3.3 y RF3.5 (vía cuotas).
   - Test: `test_cuantizacion.py` (**CA3**). Con el degradado y la foto sintética, para N = 5…7, ningún nivel tiene menos de 0,5·100/(N+1) %. Las celdas idénticas comparten nivel. Con el límite en L %, el nivel N queda ≤ L % y los demás quedan ≈ parejos.
 
-- [ ] **T11 — K-means y uniforme.** k-means 1D ponderado sobre el histograma, inicializado con los cuantiles, más el re-sembrado de clusters vacíos, y `uniform`.
+- [x] **T11 — K-means y uniforme.** k-means 1D ponderado sobre el histograma, inicializado con los cuantiles, más el re-sembrado de clusters vacíos, y `uniform`.
   - Cubre: RF3.1 y RNF2.
   - Test: k-means da el mismo resultado en dos corridas, converge en un caso de 3 clusters obvios y no deja clusters vacíos. `uniform` usa los cortes k/(N+1).
 

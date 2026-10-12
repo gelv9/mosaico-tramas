@@ -55,3 +55,58 @@ def cortes_quantiles(d: Matriz, n: int, max_oscuros_pct: float | None = None) ->
 def aplicar_cortes(d: Matriz, cortes: Cortes) -> Niveles:
     """Nivel de cada celda = cantidad de cortes menores o iguales a su oscuridad."""
     return np.searchsorted(cortes, d, side="right").astype(np.uint8)
+
+
+def cortes_uniformes(n: int) -> Cortes:
+    """Bins uniformes, como el prototipo (solo para comparar): c_k = k/(N+1)."""
+    return np.arange(1, n + 1, dtype=np.float64) / (n + 1)
+
+
+def cortes_kmeans(d: Matriz, n: int, max_iter: int = 100, tolerancia: float = 1e-6) -> Cortes:
+    """K-means 1D (k = N + 1) sobre el histograma ponderado (design.md §6.2).
+
+    Se inicializa con los cuantiles, así que es determinista sin semilla. Un cluster vacío
+    se re-siembra en el bin de mayor error cuadrático (desempate: índice más bajo).
+    """
+    k = n + 1
+    pesos = _histograma(d).astype(np.float64)
+    centros_bin = (_BORDES[:-1] + _BORDES[1:]) / 2
+    ocupados = pesos > 0
+
+    # Inicialización: media ponderada de cada tramo de cuantiles
+    limites = np.concatenate(([0.0], cortes_quantiles(d, n), [1.0 + 1e-9]))
+    centros = np.empty(k)
+    for j in range(k):
+        en_tramo = (centros_bin >= limites[j]) & (centros_bin < limites[j + 1])
+        masa = pesos[en_tramo].sum()
+        centros[j] = (
+            (pesos[en_tramo] * centros_bin[en_tramo]).sum() / masa
+            if masa > 0
+            else (limites[j] + min(limites[j + 1], 1.0)) / 2
+        )
+
+    for _ in range(max_iter):
+        centros = np.sort(centros)
+        fronteras = (centros[:-1] + centros[1:]) / 2
+        asignacion = np.searchsorted(fronteras, centros_bin, side="right")
+        masas = np.bincount(asignacion, weights=pesos, minlength=k)
+        sumas = np.bincount(asignacion, weights=pesos * centros_bin, minlength=k)
+        nuevos = np.where(masas > 0, sumas / np.where(masas > 0, masas, 1), centros)
+        for j in np.flatnonzero(masas == 0):
+            # Re-siembra en el bin ocupado con mayor error que no sea ya un centro
+            error = pesos * (centros_bin - nuevos[asignacion]) ** 2
+            error[~ocupados | np.isin(centros_bin, nuevos)] = -1.0
+            if error.max() > 0:
+                nuevos[j] = centros_bin[int(np.argmax(error))]
+        convergio = np.abs(np.sort(nuevos) - centros).max() < tolerancia
+        centros = nuevos
+        if convergio:
+            break
+
+    centros = np.sort(centros)
+    cortes = (centros[:-1] + centros[1:]) / 2
+    # Garantiza cortes estrictamente crecientes aunque haya centros repetidos
+    for i in range(1, len(cortes)):
+        if cortes[i] <= cortes[i - 1]:
+            cortes[i] = np.nextafter(cortes[i - 1], np.inf)
+    return cortes
