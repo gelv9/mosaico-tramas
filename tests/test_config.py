@@ -29,22 +29,21 @@ def test_defaults():
     assert not config.grilla_en_solucion
 
 
-# --- CA2: cantidad de símbolos fuera de rango o no entera ---
+# --- CA2: la cantidad de símbolos es fija (estilo clásico) ---
 
 
-@pytest.mark.parametrize("valor", [4, 8, 11, 0, -3, 5.5, True, "x", None])
-def test_n_simbolos_invalido_mensaje_exacto(valor: object):
+@pytest.mark.parametrize("valor", [5, 7, 4, 10, 0, 5.5, True, "x", None])
+def test_n_simbolos_distinto_de_6_mensaje_exacto(valor: object):
     with pytest.raises(ConfigInvalidaError) as info:
         MosaicoConfig.crear(n_simbolos=valor)
     esperado = (
-        f"La cantidad de símbolos debe ser un entero entre 5 y 7 (valor recibido: {valor!r})."
+        f"La cantidad de símbolos es fija: el estilo clásico usa 6 (valor recibido: {valor!r})."
     )
     assert esperado in str(info.value)
 
 
-@pytest.mark.parametrize("valor", [5, 6, 7])
-def test_n_simbolos_valido(valor: int):
-    assert MosaicoConfig.crear(n_simbolos=valor).n_simbolos == valor
+def test_n_simbolos_6_es_valido():
+    assert MosaicoConfig.crear(n_simbolos=6).n_simbolos == 6
 
 
 # --- Otros rangos ---
@@ -161,18 +160,6 @@ def test_config_hashable_y_serializable():
     assert a.model_dump_json() == b.model_dump_json()
 
 
-# --- Triángulo opcional (checkpoint B) ---
-
-
-def test_triangulo_activado_por_defecto():
-    assert MosaicoConfig.crear().usar_triangulo is True
-
-
-def test_sin_triangulo_n_maximo_6():
-    assert MosaicoConfig.crear(usar_triangulo=False, n_simbolos=6).n_simbolos == 6
-    with pytest.raises(ConfigInvalidaError) as info:
-        MosaicoConfig.crear(usar_triangulo=False, n_simbolos=7)
-    assert (
-        "Sin el triángulo, la cantidad de símbolos debe ser un entero entre 5 y 6 "
-        "(valor recibido: 7)."
-    ) in str(info.value)
+def test_ya_no_existe_la_opcion_del_triangulo():
+    with pytest.raises(ConfigInvalidaError, match="Parámetro desconocido: 'usar_triangulo'"):
+        MosaicoConfig.crear(usar_triangulo=False)

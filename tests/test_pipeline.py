@@ -61,9 +61,9 @@ def test_multi_papel_misma_grilla_y_zip(png_foto: bytes):
 
 
 def test_rf5_8_nombres(png_foto: bytes):
-    resultado = generar_mosaico(png_foto, MosaicoConfig.crear(columnas=30, n_simbolos=7))
-    assert nombre_archivo("perro", resultado, "A4", "pdf") == "perro_A4_7sym_30x40.pdf"
-    assert "perro_solution_7sym_30x40.png" in archivos(resultado, "perro")
+    resultado = generar_mosaico(png_foto, MosaicoConfig.crear(columnas=30))
+    assert nombre_archivo("perro", resultado, "A4", "pdf") == "perro_A4_6sym_30x40.pdf"
+    assert "perro_solution_6sym_30x40.png" in archivos(resultado, "perro")
 
 
 @pytest.mark.parametrize(
@@ -128,9 +128,7 @@ def test_ca12_el_nucleo_no_importa_streamlit(tmp_path):
 @pytest.mark.slow
 def test_ca13_100x140_en_menos_de_5_segundos():
     imagen = a_png(generar_foto_sintetica(1000, 1400))
-    config = MosaicoConfig.crear(
-        columnas=100, papeles=["CUSTOM"], papel_personalizado=(430, 600), n_simbolos=7
-    )
+    config = MosaicoConfig.crear(columnas=100, papeles=["CUSTOM"], papel_personalizado=(430, 600))
     generar_mosaico(imagen, config, con_png=False)  # calienta imports y caches
     inicio = time.perf_counter()
     resultado = generar_mosaico(imagen, config, con_png=False)

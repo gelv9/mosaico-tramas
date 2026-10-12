@@ -25,7 +25,7 @@ def hoja_muestra(n: int | None) -> bytes:
         simbolos = sorted(BIBLIOTECA, key=lambda s: (cobertura(s), s.id))
         titulo = "Symbol library (all candidates)"
     else:
-        simbolos = list(elegir_simbolos(n))
+        simbolos = list(elegir_simbolos())
         titulo = f"Symbol sample - N = {n}"
 
     ancho, alto = REGISTRO_PAPELES["A4"].tamano_pt(Orientacion.PORTRAIT)

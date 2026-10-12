@@ -7,7 +7,7 @@ import pandas as pd
 import streamlit as st
 
 from mosaico_tramas import __version__
-from mosaico_tramas.config import N_MAX, N_MAX_SIN_TRIANGULO, N_MIN, MosaicoConfig
+from mosaico_tramas.config import MosaicoConfig
 from mosaico_tramas.errores import CeldaDemasiadoChicaError, MosaicoError
 from mosaico_tramas.papel import PERSONALIZADO, REGISTRO_PAPELES
 from mosaico_tramas.pipeline import (
@@ -65,17 +65,8 @@ def _imagen() -> tuple[bytes, str] | None:
 def _controles(settings: Settings) -> dict[str, object]:
     """Barra lateral con todos los parámetros (RF8.2)."""
     barra = st.sidebar
-    barra.subheader("Símbolos")
-    usar_triangulo = barra.checkbox(
-        "Usar triángulo",
-        value=True,
-        key="usar_triangulo",
-        help="Sin el triángulo la escala tiene hasta 6 símbolos.",
-    )
-    n_max = N_MAX if usar_triangulo else N_MAX_SIN_TRIANGULO
-    if st.session_state.get("n_simbolos", 6) > n_max:
-        st.session_state["n_simbolos"] = n_max
-    n_simbolos = barra.slider("Cantidad de símbolos", N_MIN, n_max, 6, key="n_simbolos")
+    barra.subheader("Tonos")
+    barra.caption(r"Estilo clásico: punto · / · \ · X · asterisco · celda llena.")
     metodo = barra.selectbox(
         "Método de cuantización", list(METODOS), format_func=METODOS.get, key="metodo"
     )
@@ -128,8 +119,6 @@ def _controles(settings: Settings) -> dict[str, object]:
     )
 
     return {
-        "n_simbolos": n_simbolos,
-        "usar_triangulo": usar_triangulo,
         "metodo": metodo,
         "reduccion_ruido": reduccion,
         "umbral_ruido": umbral,

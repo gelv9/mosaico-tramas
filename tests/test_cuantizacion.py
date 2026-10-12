@@ -236,9 +236,9 @@ def test_ca10_limite_se_cumple_con_ruido_activo(metodo: str, png_foto: bytes):
 
 def test_distribucion_suma_el_total(png_foto: bytes):
     d = _oscuridad(png_foto)
-    resultado = cuantizar(d, MosaicoConfig.crear(n_simbolos=7))
+    resultado = cuantizar(d, MosaicoConfig.crear())
     dist = resultado.distribucion
-    assert len(dist.conteos) == 8
+    assert len(dist.conteos) == 7
     assert sum(dist.conteos) == d.size
     assert sum(dist.porcentajes) == pytest.approx(100.0)
 
@@ -256,7 +256,7 @@ def test_aviso_nivel_infrautilizado():
 
 def test_sin_avisos_en_el_degradado(png_degradado: bytes):
     d = _oscuridad(png_degradado)
-    config = MosaicoConfig.crear(n_simbolos=7, reduccion_ruido=False, limitar_oscuros=False)
+    config = MosaicoConfig.crear(reduccion_ruido=False, limitar_oscuros=False)
     assert cuantizar(d, config).avisos == ()
 
 

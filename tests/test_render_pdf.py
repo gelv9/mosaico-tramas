@@ -122,7 +122,7 @@ def test_texto_de_la_marca_en_la_leyenda():
 
 
 def test_leyenda_lista_todos_los_niveles():
-    lector, _, _, config = _generar(leyenda="separate", n_simbolos=7)
+    lector, _, _, config = _generar(leyenda="separate")
     texto = lector.pages[1].extract_text()
     for nivel in range(1, config.n_simbolos + 1):
         assert str(nivel) in texto

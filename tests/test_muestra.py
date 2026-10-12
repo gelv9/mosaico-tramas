@@ -20,7 +20,7 @@ def _texto(lector: PdfReader) -> str:
     return "\n".join(pagina.extract_text() for pagina in lector.pages)
 
 
-@pytest.mark.parametrize("n", [5, 6, 7])
+@pytest.mark.parametrize("n", [6])
 def test_hoja_para_n(n: int):
     lector = _leer(hoja_muestra(n))
     ancho, alto = REGISTRO_PAPELES["A4"].tamano_pt(Orientacion.PORTRAIT)
@@ -29,7 +29,7 @@ def test_hoja_para_n(n: int):
     assert float(caja.height) == pytest.approx(alto, abs=0.01)
     texto = _texto(lector)
     assert f"N = {n}" in texto
-    for simbolo in elegir_simbolos(n):
+    for simbolo in elegir_simbolos():
         assert simbolo.id in texto
         assert f"{cobertura(simbolo):.1f}%" in texto
 

@@ -1,114 +1,43 @@
-"""Tests de la selección del subconjunto de símbolos (T6, CA1, CA9)."""
+"""Tests del set fijo del estilo clásico (T29, CA1)."""
 
 import pytest
 
 from mosaico_tramas.config import MosaicoConfig
-from mosaico_tramas.errores import ConfigInvalidaError, ErrorBibliotecaSimbolos
-from mosaico_tramas.simbolos.biblioteca import (
-    BIBLIOTECA,
-    ID_LLENO,
-    ID_PUNTO,
-    ID_TRIANGULO,
-    POR_ID,
-    horizontal,
-)
-from mosaico_tramas.simbolos.primitivas import Simbolo
+from mosaico_tramas.errores import ErrorBibliotecaSimbolos
+from mosaico_tramas.simbolos.biblioteca import BIBLIOTECA, ORDEN_CLASICO, POR_ID
 from mosaico_tramas.simbolos.raster import cobertura
-from mosaico_tramas.simbolos.seleccion import (
-    DELTA_MIN,
-    DELTA_MIN_0,
-    elegir_simbolos,
-    simbolos_para,
-)
-
-RANGO_N = range(5, 8)
+from mosaico_tramas.simbolos.seleccion import DELTA_MIN_0, elegir_simbolos, simbolos_para
 
 
-@pytest.mark.parametrize("n", RANGO_N)
-def test_cantidad_y_extremos(n: int):
-    simbolos = elegir_simbolos(n)
-    assert len(simbolos) == n
-    assert simbolos[0].id == ID_PUNTO
-    assert simbolos[-1].id == ID_LLENO
+def test_orden_fijo_de_la_referencia():
+    ids = [s.id for s in elegir_simbolos()]
+    assert ids == ["punto", "diag_asc", "diag_desc", "aspa", "asterisco", "lleno"]
+    assert tuple(ids) == ORDEN_CLASICO
 
 
-@pytest.mark.parametrize("n", RANGO_N)
-def test_ca1_cobertura_creciente_y_saltos_minimos(n: int):
-    coberturas = [cobertura(s) for s in elegir_simbolos(n)]
-    # Salto vacío (0 %) → nivel 1
-    assert coberturas[0] - 0.0 >= DELTA_MIN_0
-    for anterior, siguiente in zip(coberturas, coberturas[1:], strict=False):
-        assert siguiente > anterior
-        assert siguiente - anterior >= DELTA_MIN
+def test_ca1_cobertura_no_decreciente_con_igualdad_solo_entre_diagonales():
+    coberturas = [cobertura(s) for s in elegir_simbolos()]
+    assert coberturas[0] - 0.0 >= DELTA_MIN_0  # vacío → punto
+    for nivel, (anterior, siguiente) in enumerate(zip(coberturas, coberturas[1:], strict=False), 1):
+        if nivel == 2:
+            # / y \ comparten tono a propósito: la dirección da textura
+            assert siguiente == pytest.approx(anterior, abs=0.01)
+        else:
+            assert siguiente > anterior + 6
 
 
-@pytest.mark.parametrize("n", RANGO_N)
-def test_ca9_familias_distintas(n: int):
-    familias = [s.familia for s in elegir_simbolos(n)]
-    assert len(set(familias)) == n
+def test_diagonales_en_direcciones_opuestas():
+    asc, desc = POR_ID["diag_asc"].primitivas[0], POR_ID["diag_desc"].primitivas[0]
+    # "/" sube hacia la derecha (y hacia abajo en la celda); "\" baja hacia la derecha
+    assert {asc.p0, asc.p1} == {(0.0, 1.0), (1.0, 0.0)}
+    assert {desc.p0, desc.p1} == {(0.0, 0.0), (1.0, 1.0)}
 
 
-def test_umbrales_del_diseno():
-    assert DELTA_MIN == 6.0
-    assert DELTA_MIN_0 == 1.5
+def test_simbolos_para_la_config():
+    assert simbolos_para(MosaicoConfig.crear()) == elegir_simbolos()
 
 
-@pytest.mark.parametrize("n", RANGO_N)
-def test_determinista(n: int):
-    elegir_simbolos.cache_clear()
-    primera = [s.id for s in elegir_simbolos(n)]
-    elegir_simbolos.cache_clear()
-    assert [s.id for s in elegir_simbolos(n)] == primera
-
-
-def test_maximiza_el_salto_minimo():
-    # Con N = 5 hay mucho margen: el salto mínimo tiene que ser holgado (~15 pp)
-    coberturas = [cobertura(s) for s in elegir_simbolos(5)]
-    saltos = [b - a for a, b in zip(coberturas, coberturas[1:], strict=False)]
-    assert min(saltos) > 14
-
-
-def test_resultado_de_diseno_para_n7():
-    ids = [s.id for s in elegir_simbolos(7)]
-    assert ids == ["punto", "horiz1", "cruz", "aspa1", "estrella", "triangulo", "lleno"]
-
-
-def test_biblioteca_imposible_lanza_error():
-    # Solo dos candidatos intermedios con la misma cobertura: no alcanza para N = 5
-    chica = (
-        POR_ID[ID_PUNTO],
-        Simbolo("h_a", "familia_a", "a", (horizontal(0.5),)),
-        Simbolo("h_b", "familia_b", "b", (horizontal(0.25),)),
-        POR_ID[ID_LLENO],
-    )
-    with pytest.raises(ErrorBibliotecaSimbolos, match="no permite armar 5 símbolos"):
-        elegir_simbolos(5, chica)
-
-
-@pytest.mark.parametrize("n", [4, 8])
-def test_n_fuera_de_rango(n: int):
-    with pytest.raises(ConfigInvalidaError, match="entre 5 y 7"):
-        elegir_simbolos(n)
-
-
-def test_biblioteca_por_defecto_es_la_completa():
-    assert elegir_simbolos(6) == elegir_simbolos(6, BIBLIOTECA)
-
-
-# --- Triángulo opcional (checkpoint B) ---
-
-
-@pytest.mark.parametrize("n", [5, 6])
-def test_sin_triangulo_lo_excluye_y_cumple_las_reglas(n: int):
-    config = MosaicoConfig.crear(n_simbolos=n, usar_triangulo=False)
-    simbolos = simbolos_para(config)
-    assert ID_TRIANGULO not in [s.id for s in simbolos]
-    coberturas = [cobertura(s) for s in simbolos]
-    assert all(b - a >= DELTA_MIN for a, b in zip(coberturas, coberturas[1:], strict=False))
-    assert len({s.familia for s in simbolos}) == n
-
-
-def test_con_triangulo_usa_la_biblioteca_completa():
-    config = MosaicoConfig.crear(n_simbolos=7)
-    assert simbolos_para(config) == elegir_simbolos(7)
-    assert ID_TRIANGULO in [s.id for s in simbolos_para(config)]
+def test_biblioteca_incompleta_lanza_error():
+    incompleta = tuple(s for s in BIBLIOTECA if s.id != "asterisco")
+    with pytest.raises(ErrorBibliotecaSimbolos, match="asterisco"):
+        elegir_simbolos(incompleta)

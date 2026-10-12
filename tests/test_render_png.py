@@ -10,7 +10,7 @@ from mosaico_tramas.config import MosaicoConfig
 from mosaico_tramas.render_png import png_plantilla, png_solucion, tamano_tile
 from mosaico_tramas.simbolos.seleccion import simbolos_para
 
-SIMBOLOS = simbolos_para(MosaicoConfig.crear(n_simbolos=6))
+SIMBOLOS = simbolos_para(MosaicoConfig.crear())
 
 
 def _niveles() -> np.ndarray:

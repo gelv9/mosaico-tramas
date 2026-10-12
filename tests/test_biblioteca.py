@@ -9,20 +9,16 @@ from mosaico_tramas.simbolos.raster import cobertura
 # Coberturas de design.md §4.2 (%)
 COBERTURAS_DISENO = {
     "punto": 2.0,
-    "horiz1": 12.5,
-    "vert1": 12.5,
-    "diag1": 17.2,
-    "cruz": 23.4,
-    "horiz2": 25.0,
-    "aspa1": 32.1,
-    "estrella": 41.7,
-    "triangulo": 50.0,
+    "diag_asc": 17.0,
+    "diag_desc": 17.0,
+    "aspa": 32.4,
+    "asterisco": 51.6,
     "lleno": 100.0,
 }
 
 
-def test_al_menos_10_candidatos_con_ids_unicos():
-    assert len(BIBLIOTECA) >= 10
+def test_seis_simbolos_con_ids_unicos():
+    assert len(BIBLIOTECA) == 6
     assert len(POR_ID) == len(BIBLIOTECA)
 
 
@@ -34,8 +30,13 @@ def test_extremos_fijos_existen():
 
 @pytest.mark.parametrize("simbolo", BIBLIOTECA, ids=lambda s: s.id)
 def test_dibujable_a_mano(simbolo):
-    # RF2.6: como máximo 3 trazos, solo rectas, puntos y rellenos
-    assert 1 <= simbolo.trazos <= 3
+    # RF2.6: como máximo 3 trazos, o 4 si todos se cruzan en el centro (asterisco)
+    assert 1 <= simbolo.trazos <= 4
+    if simbolo.trazos == 4:
+        for linea in simbolo.primitivas:
+            assert isinstance(linea, Linea)
+            medio = ((linea.p0[0] + linea.p1[0]) / 2, (linea.p0[1] + linea.p1[1]) / 2)
+            assert medio == pytest.approx((0.5, 0.5))
     for primitiva in simbolo.primitivas:
         assert isinstance(primitiva, Linea | Punto | Poligono)
 
@@ -60,11 +61,11 @@ def test_cobertura_coincide_con_el_diseno(simbolo):
     assert cobertura(simbolo) == pytest.approx(COBERTURAS_DISENO[simbolo.id], abs=1.0)
 
 
-def test_rellenos_solo_celda_llena_y_triangulo():
-    # RF2.6a: los únicos rellenos son la celda completa y el triángulo de media celda
+def test_unico_relleno_es_la_celda_llena():
+    # RF2.6a (estilo clásico): solo rayas, el punto y la celda llena
     for simbolo in BIBLIOTECA:
         if any(isinstance(p, Poligono) for p in simbolo.primitivas):
-            assert simbolo.id in {ID_LLENO, "triangulo"}, simbolo.id
+            assert simbolo.id == ID_LLENO, simbolo.id
 
 
 def test_cada_simbolo_tiene_familia_y_nombre_en_ingles():

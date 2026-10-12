@@ -39,8 +39,6 @@ def test_arranca_sin_imagen(app: AppTest):
 def test_tiene_todos_los_controles(app: AppTest):
     app.run()
     claves = {
-        "n_simbolos",
-        "usar_triangulo",
         "metodo",
         "reduccion_ruido",
         "umbral_ruido",
@@ -67,12 +65,10 @@ def test_preview_con_imagen(app_con_imagen: AppTest):
     assert "Grilla 40 × 53" in _textos(app_con_imagen.caption)
 
 
-def test_sin_triangulo_baja_el_maximo_de_simbolos(app_con_imagen: AppTest):
+def test_no_hay_controles_de_cantidad_ni_triangulo(app_con_imagen: AppTest):
     app_con_imagen.run()
-    app_con_imagen.slider(key="n_simbolos").set_value(7).run()
-    app_con_imagen.checkbox(key="usar_triangulo").uncheck().run()
-    assert app_con_imagen.slider(key="n_simbolos").value == 6
-    assert not app_con_imagen.error
+    assert "n_simbolos" not in app_con_imagen.session_state
+    assert "usar_triangulo" not in app_con_imagen.session_state
 
 
 def test_celda_chica_muestra_error_en_espanol(app_con_imagen: AppTest):

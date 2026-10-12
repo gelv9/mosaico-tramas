@@ -149,7 +149,7 @@
 
 ## Bloque E — Ajustes por la referencia (checkpoint D)
 
-- [ ] **T29 — Estilo clásico.** Biblioteca de 6 símbolos (punto, /, \, X, asterisco, lleno), orden fijo en `elegir_simbolos`, N fijo en 6 y se elimina `usar_triangulo`. La UI deja de mostrar la cantidad de símbolos y el triángulo.
+- [x] **T29 — Estilo clásico.** Biblioteca de 6 símbolos (punto, /, \, X, asterisco, lleno), orden fijo en `elegir_simbolos`, N fijo en 6 y se elimina `usar_triangulo`. La UI deja de mostrar la cantidad de símbolos y el triángulo.
   - Cubre: RF1.1, RF1.3, RF2.1, RF2.4, RF2.6, RF2.6a y RF2.7.
   - Test (**CA1, CA2, CA9**): orden y coberturas, mensaje en español para N ≠ 6, regla física con el asterisco radial y tramado continuo.
 

@@ -1,8 +1,7 @@
-"""Catálogo de símbolos candidatos (design.md §4.2).
+"""Biblioteca del estilo clásico (design.md §4.0, checkpoint D).
 
-Solo símbolos fáciles a mano (checkpoint A): como máximo 3 trazos y al menos 2 mm entre rayas
-paralelas en una celda de 4 mm. Los únicos rellenos son la celda llena y el triángulo de media
-celda (una diagonal y se rellena una mitad).
+Replica la referencia: punto, diagonal /, diagonal \, aspa (X), asterisco de 8 rayos y celda
+llena, en ese orden de claro a oscuro. Las dos diagonales comparten tono a propósito.
 
 Convención: coordenadas normalizadas con y hacia abajo. Una diagonal "/" va de la esquina
 inferior izquierda (0, 1) a la superior derecha (1, 0), es decir, x + y = c. Una "\\" cumple
@@ -38,7 +37,6 @@ def vertical(x: float) -> Linea:
     return Linea((x, 0.0), (x, 1.0))
 
 
-_TRIANGULO = Poligono(((0.0, 0.0), (0.0, 1.0), (1.0, 1.0)))  # ◣ mitad inferior izquierda
 _LLENO = Poligono(((0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)))
 
 
@@ -47,23 +45,25 @@ def _s(id_: str, familia: str, nombre_en: str, *primitivas: Linea | Punto | Poli
 
 
 BIBLIOTECA: tuple[Simbolo, ...] = (
-    _s("punto", "punto", "center dot", Punto(0.08)),
-    _s("horiz1", "horizontal", "horizontal line", horizontal(0.5)),
-    _s("vert1", "vertical", "vertical line", vertical(0.5)),
-    _s("diag1", "diagonal", "diagonal line", diagonal(1.0)),
-    _s("cruz", "cruz", "plus", horizontal(0.5), vertical(0.5)),
-    # Dos horizontales a ¼ y ¾: 2 mm entre sí y contra la celda vecina en una celda de 4 mm
-    _s("horiz2", "horizontal", "two horizontal lines", horizontal(0.25), horizontal(0.75)),
-    _s("aspa1", "aspa", "cross", diagonal(1.0), antidiagonal(0.0)),
-    _s("estrella", "estrella", "star", diagonal(1.0), antidiagonal(0.0), horizontal(0.5)),
-    _s("triangulo", "triangulo", "half triangle", _TRIANGULO),
+    _s("punto", "punto", "dot", Punto(0.08)),
+    _s("diag_asc", "diagonal_ascendente", "diagonal /", diagonal(1.0)),
+    _s("diag_desc", "diagonal_descendente", "diagonal \\", antidiagonal(0.0)),
+    _s("aspa", "aspa", "cross (X)", diagonal(1.0), antidiagonal(0.0)),
+    # 4 rayas que se cruzan en el centro: fácil a mano pese a ser 4 trazos (RF2.6)
+    _s(
+        "asterisco",
+        "asterisco",
+        "asterisk",
+        diagonal(1.0),
+        antidiagonal(0.0),
+        horizontal(0.5),
+        vertical(0.5),
+    ),
     _s("lleno", "lleno", "solid", _LLENO),
 )
 
 POR_ID: dict[str, Simbolo] = {s.id: s for s in BIBLIOTECA}
 ID_PUNTO = "punto"
 ID_LLENO = "lleno"
-ID_TRIANGULO = "triangulo"
-
-# Biblioteca sin el triángulo (opción usar_triangulo = False)
-SIN_TRIANGULO: tuple[Simbolo, ...] = tuple(s for s in BIBLIOTECA if s.id != ID_TRIANGULO)
+# Orden de claro a oscuro de la referencia (niveles 1…6)
+ORDEN_CLASICO: tuple[str, ...] = ("punto", "diag_asc", "diag_desc", "aspa", "asterisco", "lleno")
