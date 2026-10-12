@@ -140,7 +140,7 @@
   - Cubre: RF4.6b y RF8.5.
   - Test (AppTest): al pulsar la sugerencia cambian las columnas y desaparece el error. Después de "Generar PDF" existen los botones de descarga, y con multi-papel la descarga es un ZIP.
 
-- [ ] **T28 — README y `.env.example` actualizados.** Uso, parámetros y recomendación de birome.
+- [x] **T28 — README y `.env.example` actualizados.** Uso, parámetros y recomendación de birome.
   - Test: no aplica; se revisa en el checkpoint.
 
 > 🛑 **Checkpoint D.** Demo de la UI en el navegador integrado.

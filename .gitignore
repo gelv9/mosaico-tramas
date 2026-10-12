@@ -24,3 +24,6 @@ output/
 
 # Imágenes de prueba del usuario (no se versionan)
 samples/
+
+# Configuración local del entorno de Claude
+.claude/
