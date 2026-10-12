@@ -30,7 +30,7 @@
   - Cubre: RF2.1, RF2.2 y RF2.6.
   - Test: `test_biblioteca.py`. Hay ≥ 14 candidatos y los ids son únicos. Cada símbolo tiene ≤ 6 trazos, coordenadas en [0, 1], está compuesto solo de `Linea`, `Punto` o `Poligono`, y existen `punto` y `lleno`. Las coberturas medidas quedan a ±1 pp de la tabla de diseño.
 
-- [ ] **T6 — Selección del subconjunto.** `simbolos/seleccion.py`: `elegir_simbolos(n)` por backtracking con poda y cache.
+- [x] **T6 — Selección del subconjunto.** `simbolos/seleccion.py`: `elegir_simbolos(n)` por backtracking con poda y cache.
   - Cubre: RF2.4 (a–e), RF2.5 y RF2.7.
   - Test: `test_seleccion.py` (**CA1, CA9**). Para N = 5…10: cobertura estrictamente creciente, Δ ≥ 6 pp entre los niveles 1…N, Δ ≥ 1,5 pp entre el vacío y el nivel 1, nivel 1 = punto, nivel N = lleno, familias distintas y mismo resultado en dos llamadas. Con una biblioteca imposible (inyectada) se lanza `ErrorBibliotecaSimbolos`.
 

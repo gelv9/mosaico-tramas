@@ -161,7 +161,7 @@ Bocetos en una grilla de 5 × 5 caracteres (`█` = tinta). Las líneas van de b
 | `bloque50` | bloque | cuadrado relleno centrado, de lado 0,5 | 1 | 25,1 % |
 | `bloque60` | bloque | cuadrado relleno centrado, de lado 0,6 | 1 | 36,2 % |
 | `triangulo` | triangulo | mitad inferior izquierda rellena (◣) | 1 | 50,1 % |
-| `tri_rayas` | triangulo_rayado | ◣ + 2 `` paralelas a la hipotenusa, en la mitad libre | 3 | 59,9 % (corregido en T5: el prototipo cruzaba las rayas sobre el triángulo) |
+| `tri_rayas` | triangulo_rayado | ◣ + 2 `\` paralelas a la hipotenusa, en la mitad libre | 3 | 59,9 % (corregido en T5: el prototipo cruzaba las rayas sobre el triángulo) |
 | `mitad_rayas` | mitad | mitad inferior rellena + 2 horizontales arriba | 3 | 64,3 % |
 | `tres_cuartos` | tres_cuartos | todo relleno salvo el cuadrante superior derecho | 1 | 75,1 % |
 | `esquina` | esquina | todo relleno salvo un triangulito en la esquina superior derecha | 1 | 87,5 % |
@@ -193,14 +193,14 @@ elegir la mejor clave; si no hay ninguna → ErrorBibliotecaSimbolos (RF2.7)
 - La búsqueda es por backtracking sobre la lista ordenada y poda en cuanto un gap queda por debajo de 6 o se repite una familia. Tarda milisegundos y el resultado se cachea por N.
 - Resultado del prototipo, con N : gap mínimo → símbolos:
 
-| N | gap mín. | niveles 1…N |
+| N | gap mín. | niveles 1…N (resultado real de `elegir_simbolos`, T6) |
 |---|---|---|
 | 5 | 23,6 | punto 2 · reja1 27 · triangulo 50 · tres_cuartos 75 · lleno 100 |
-| 6 | 16,9 | punto · aspa1 19 · bloque60 36 · tri_rayas 55 · tres_cuartos 75 · lleno |
-| 7 | 12,5 | punto · aspa1 19 · bloque60 36 · triangulo 50 · mitad_rayas 64 · esquina 88 · lleno |
-| 8 | 11,4 | punto · cruz 14 · bloque50 25 · aspa3 37 · triangulo 50 · mitad_rayas 64 · esquina 88 · lleno |
+| 6 | 15,2 | punto · aspa1 19 · bloque60 36 · tri_rayas 60 · tres_cuartos 75 · lleno |
+| 7 | 12,5 | punto · aspa1 19 · bloque60 36 · triangulo 50 · tres_cuartos 75 · esquina 88 · lleno |
+| 8 | 11,4 | punto · cruz 14 · bloque50 25 · reja2 38 · triangulo 50 · tres_cuartos 75 · esquina 88 · lleno |
 | 9 | 10,8 | punto · diag2 13 · aspa2 24 · bloque60 36 · triangulo 50 · mitad_rayas 64 · tres_cuartos 75 · esquina 88 · lleno |
-| 10 | 7,2 | punto · diag1 10 · aspa1 19 · reja1 27 · bloque60 36 · triangulo 50 · mitad_rayas 64 · tres_cuartos 75 · esquina 88 · lleno |
+| 10 | 7,3 | punto · diag1 10 · aspa1 19 · reja1 27 · bloque60 36 · triangulo 50 · mitad_rayas 64 · tres_cuartos 75 · esquina 88 · lleno |
 
 ## 5. Preprocesamiento (`imagen.py`)
 
