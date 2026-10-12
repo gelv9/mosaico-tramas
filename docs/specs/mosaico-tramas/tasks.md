@@ -14,7 +14,7 @@
   - Cubre: base de RF1.3, RF4.6a, RF6.3, RF3.7 y RP6.
   - Test: `test_errores.py`. Las excepciones heredan de `MosaicoError`, el mensaje se conserva y `Aviso` es inmutable.
 
-- [ ] **T2 — Papeles.** `papel.py`: `Papel`, `REGISTRO_PAPELES` (A4, LETTER, A3, TABLOID), `papel_personalizado(ancho, alto)` con validación de 100 a 1200 mm, `orientar()` y `mm_a_pt()`.
+- [x] **T2 — Papeles.** `papel.py`: `Papel`, `REGISTRO_PAPELES` (A4, LETTER, A3, TABLOID), `papel_personalizado(ancho, alto)` con validación de 100 a 1200 mm, `orientar()` y `mm_a_pt()`.
   - Cubre: RF5.1, RF5.1a, RF5.1b, RF5.2 y RF5.3.
   - Test: `test_papel.py`. Las medidas en pt coinciden (±0,01) con la tabla de RF5.1, `auto` responde según la proporción, y un papel personalizado fuera de rango da error en español.
 
