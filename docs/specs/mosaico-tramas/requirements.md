@@ -48,7 +48,7 @@
 - **RF2.4** — WHEN se pide un subconjunto para N, THE SYSTEM SHALL devolver N símbolos que cumplan:
   - (a) **cobertura estrictamente creciente** del nivel 1 al nivel N;
   - (b) **diferencia mínima Δ_MIN = 6 puntos porcentuales** de cobertura entre niveles consecutivos 1…N, y **Δ_MIN_0 = 1,5 pp** entre el vacío (0 %) y el nivel 1 *(decidido, Q4a)*;
-  - (c) **forma distinta**: dos símbolos elegidos no pueden compartir la misma *firma de forma* (orientaciones de los trazos + tipo de primitiva). Además, su disimilitud raster (1 − IoU de la tinta) tiene que ser ≥ **0,35** (propuesta).
+  - (c) **forma distinta**: cada símbolo declara su *familia visual* en la biblioteca (diagonal, aspa, reja, bloque, …) y un subconjunto no puede tener dos símbolos de la misma familia *(enmienda aprobada en la Fase 2: reemplaza la regla 1 − IoU ≥ 0,35, que resultó infactible para los símbolos oscuros; ver design.md §4.3)*;
   - (d) **el nivel N es siempre la celda rellena** (cobertura 100 %) *(decidido, Q3)*;
   - (e) **el nivel 1 es siempre el punto central** *(decidido, Q4a)*. Los niveles 2…N−1 los elige el algoritmo.
 - **RF2.5** — WHEN hay más de un subconjunto válido, THE SYSTEM SHALL elegir el que **maximice la diferencia mínima** entre niveles consecutivos (máximo contraste perceptible). Los empates se resuelven de forma determinística.
@@ -155,7 +155,7 @@
 
 | # | Criterio | Requisitos |
 |---|---|---|
-| CA9 | Los símbolos elegidos para cada N tienen firmas de forma distintas y disimilitud raster ≥ 0,35. | RF2.4c |
+| CA9 | Los símbolos elegidos para cada N pertenecen a familias visuales distintas. | RF2.4c |
 | CA10 | Con el límite de oscuros en L %, el nivel N tiene ≤ L % de las celdas, también después de la reducción de ruido. | RF3.5, RF3.8 |
 | CA11 | Con la reducción de ruido activa (umbral 2), no queda ninguna celda aislada: ningún componente de tamaño 1. | RF3.4 |
 | CA12 | El núcleo se importa y genera sin que `streamlit` esté en `sys.modules`. | RNF3 |
@@ -170,7 +170,7 @@
 | N_MAX | **10** | Once tonos alcanzan para un grabado rico. Con más, se vuelve difícil diferenciar los símbolos dibujados a mano. |
 | Tamaño de la biblioteca | **≥ 14** | Margen para elegir por forma y densidad. |
 | Δ_MIN de cobertura | **6 pp** (niveles 1…N); **1,5 pp** (vacío → punto) | Con 10 niveles hacen falta ≥ 60 pp de rango (0 → ~100 %), así que 6 pp es alcanzable. Además, el algoritmo maximiza el contraste por encima de ese piso. |
-| Disimilitud de forma | **≥ 0,35** (1 − IoU) + firma distinta | Evita pares como `//` y `///` desplazado. |
+| Distinción de forma | Una familia visual por subconjunto | Evita pares como `/` y `//`, o `X` y `XX` (enmienda de la Fase 2). |
 | Trazos por símbolo | **≤ 6** | Se dibujan rápido con birome. |
 | Referencia de cobertura | Celda de 5 mm, trazo de 0,35 mm | Equivale a una birome o fineliner fina. |
 | CELDA_MIN | **4 mm** (límite duro: no se genera) | Por debajo se hace difícil leer un "10" y dibujar una cruz densa. Recomendado: ≥ 5 mm. |
