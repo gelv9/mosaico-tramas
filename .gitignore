@@ -21,3 +21,6 @@ output/
 # Editor
 .vscode/*
 !.vscode/settings.json
+
+# Imágenes de prueba del usuario (no se versionan)
+samples/
