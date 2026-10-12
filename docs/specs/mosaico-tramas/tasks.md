@@ -22,7 +22,7 @@
   - Cubre: RF1.1, RF1.3, RF3.4, RF3.5, RF4.1, RF5.4, RNF4 y RF5.1a.
   - Test: `test_config.py` (**CA2**). Con N = 4, 11, 7,5, `True` y `"x"` se obtiene el mensaje exacto de RF1.3. También se prueban los rangos de columnas, márgenes, umbral y porcentaje de oscuros, que se exija `papel_personalizado` cuando se elige CUSTOM, que `percentil_bajo` sea menor que `percentil_alto` y que la config sea inmutable.
 
-- [ ] **T4 — Primitivas y rasterizado.** `simbolos/primitivas.py` y `simbolos/raster.py`: `rasterizar(simbolo, px, trazo_rel)` con OpenCV y `cobertura(simbolo)` cacheada.
+- [x] **T4 — Primitivas y rasterizado.** `simbolos/primitivas.py` y `simbolos/raster.py`: `rasterizar(simbolo, px, trazo_rel)` con OpenCV y `cobertura(simbolo)` cacheada.
   - Cubre: RF2.2 y RF2.3.
   - Test: `test_raster.py`. La celda llena da 100 %, la vacía 0 % y una línea horizontal ≈ `TRAZO_REL` (±0,3 pp). Un triángulo de media celda da ≈ 50 %, y el rasterizado es determinista.
 
