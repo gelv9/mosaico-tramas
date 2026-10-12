@@ -82,7 +82,7 @@
 
 ## Bloque C — Layout, PDF, PNG y pipeline
 
-- [ ] **T15 — Alto de la leyenda.** `layout.alto_leyenda(n, marca_blanco, ancho_util)` y la grilla de entradas.
+- [x] **T15 — Alto de la leyenda.** `layout.alto_leyenda(n, marca_blanco, ancho_util)` y la grilla de entradas.
   - Cubre: RF6.2 y RF6.6.
   - Test: N = 6 con la marca en A4 vertical da ≈ 38,6 mm. La cantidad de entradas por fila depende del ancho útil.
 

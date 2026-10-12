@@ -98,7 +98,7 @@ class PapelPersonalizado(BaseModel, frozen=True):
 
 class MosaicoConfig(BaseModel, frozen=True):
     n_simbolos: int = 6  # 5..7 (RF1); 5..6 si usar_triangulo = False (RF1.4)
-    usar_triangulo: bool = True            # RF1.4 (checkpoint B)
+    usar_triangulo: bool = True  # RF1.4 (checkpoint B)
     columnas: int = 40  # 10..200 (RF4.1)
     metodo: MetodoCuantizacion = QUANTILES
     reduccion_ruido: bool = True
