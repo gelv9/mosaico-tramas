@@ -25,6 +25,7 @@ dev = [
     "pytest-cov>=5.0",
     "ruff>=0.5",
     "pypdf>=4.2",
+    "pypdfium2>=4.30",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -40,7 +41,7 @@ select = ["E", "F", "I", "UP", "B", "ANN", "SIM"]
 ignore = ["ANN401"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["ANN201", "ANN001"]
+"tests/**" = ["ANN201", "ANN202", "ANN001"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

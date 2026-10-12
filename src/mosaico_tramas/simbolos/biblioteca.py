@@ -41,8 +41,11 @@ def bloque(lado: float) -> Poligono:
     return Poligono(((a, a), (b, a), (b, b), (a, b)))
 
 
-_TERCIOS = (1 / 3, 2 / 3)
-_CUARTOS = (0.25, 0.5, 0.75)
+# Posiciones con espaciado parejo también entre celdas vecinas (el tramado no se corta)
+_DOS = (0.25, 0.75)
+_TRES = (1 / 6, 0.5, 5 / 6)
+_DIAG_X2 = (0.5, 1.0, 1.5)  # doble densidad de diagonales
+_DIAG_X3 = (1 / 3, 2 / 3, 1.0, 4 / 3, 5 / 3)  # triple densidad
 _TRIANGULO = Poligono(((0.0, 0.0), (0.0, 1.0), (1.0, 1.0)))  # ◣ mitad inferior izquierda
 
 
@@ -53,43 +56,41 @@ def _s(id_: str, familia: str, nombre_en: str, *primitivas: Linea | Punto | Poli
 BIBLIOTECA: tuple[Simbolo, ...] = (
     _s("punto", "punto", "center dot", Punto(0.08)),
     _s("diag1", "diagonal", "one diagonal", diagonal(1.0)),
-    _s("diag2", "diagonal", "two diagonals", diagonal(2 / 3), diagonal(4 / 3)),
-    _s("diag3", "diagonal", "three diagonals", diagonal(0.5), diagonal(1.0), diagonal(1.5)),
+    _s("diag2", "diagonal", "double diagonals", *(diagonal(c) for c in _DIAG_X2)),
+    _s("diag3", "diagonal", "triple diagonals", *(diagonal(c) for c in _DIAG_X3)),
     _s("horiz1", "horizontal", "one horizontal", horizontal(0.5)),
-    _s("horiz2", "horizontal", "two horizontals", *(horizontal(y) for y in _TERCIOS)),
-    _s("horiz3", "horizontal", "three horizontals", *(horizontal(y) for y in _CUARTOS)),
+    _s("horiz2", "horizontal", "two horizontals", *(horizontal(y) for y in _DOS)),
+    _s("horiz3", "horizontal", "three horizontals", *(horizontal(y) for y in _TRES)),
     _s("vert1", "vertical", "one vertical", vertical(0.5)),
     _s("cruz", "cruz", "plus", horizontal(0.5), vertical(0.5)),
     _s("aspa1", "aspa", "cross", diagonal(1.0), antidiagonal(0.0)),
     _s(
         "aspa2",
         "aspa",
-        "double cross",
-        diagonal(2 / 3),
-        diagonal(4 / 3),
-        antidiagonal(1 / 3),
-        antidiagonal(-1 / 3),
+        "double diagonals with cross",
+        *(diagonal(c) for c in _DIAG_X2),
+        antidiagonal(0.0),
     ),
     _s(
         "aspa3",
         "aspa",
         "dense cross-hatch",
-        *(diagonal(c) for c in (0.5, 1.0, 1.5)),
-        *(antidiagonal(c) for c in (0.5, 0.0, -0.5)),
+        *(diagonal(c) for c in _DIAG_X2),
+        *(antidiagonal(c - 1) for c in _DIAG_X2),
     ),
     _s(
         "reja1",
         "reja",
         "grid",
-        *(horizontal(y) for y in _TERCIOS),
-        *(vertical(x) for x in _TERCIOS),
+        *(horizontal(y) for y in _DOS),
+        *(vertical(x) for x in _DOS),
     ),
     _s(
         "reja2",
         "reja",
         "dense grid",
-        *(horizontal(y) for y in _CUARTOS),
-        *(vertical(x) for x in _CUARTOS),
+        *(horizontal(y) for y in _TRES),
+        *(vertical(x) for x in _TRES),
     ),
     _s(
         "asterisco",

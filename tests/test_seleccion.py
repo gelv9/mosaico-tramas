@@ -59,10 +59,10 @@ def test_resultado_de_diseno_para_n10():
     ids = [s.id for s in elegir_simbolos(10)]
     assert ids == [
         "punto",
-        "diag1",
-        "aspa1",
-        "reja1",
-        "bloque60",
+        "cruz",
+        "horiz3",
+        "diag3",
+        "reja2",
         "triangulo",
         "mitad_rayas",
         "tres_cuartos",

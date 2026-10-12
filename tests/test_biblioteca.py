@@ -10,15 +10,15 @@ from mosaico_tramas.simbolos.raster import cobertura
 COBERTURAS_DISENO = {
     "punto": 2.0,
     "diag1": 9.9,
-    "diag2": 13.2,
-    "diag3": 19.8,
+    "diag2": 19.7,
+    "diag3": 29.5,
     "horiz1": 7.1,
     "horiz2": 14.3,
     "horiz3": 21.4,
     "vert1": 7.1,
     "cruz": 13.8,
     "aspa1": 19.3,
-    "aspa2": 24.3,
+    "aspa2": 28.1,
     "aspa3": 36.5,
     "reja1": 26.5,
     "reja2": 38.3,
@@ -77,3 +77,66 @@ def test_cada_simbolo_tiene_familia_y_nombre_en_ingles():
     for simbolo in BIBLIOTECA:
         assert simbolo.familia
         assert simbolo.nombre_en.isascii()
+
+
+# --- Continuidad del tramado entre celdas vecinas ---
+
+_VECINOS = {(dx, dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1)} - {(0, 0)}
+
+
+def _lineas(simbolo):
+    return [p for p in simbolo.primitivas if isinstance(p, Linea)]
+
+
+def _solo_lineas(simbolo) -> bool:
+    return bool(simbolo.primitivas) and all(isinstance(p, Linea) for p in simbolo.primitivas)
+
+
+def _direccion(linea: Linea) -> tuple[float, float]:
+    dx, dy = linea.p1[0] - linea.p0[0], linea.p1[1] - linea.p0[1]
+    norma = (dx * dx + dy * dy) ** 0.5
+    dx, dy = dx / norma, dy / norma
+    # Normaliza el sentido para comparar direcciones
+    if dx < -1e-9 or (abs(dx) < 1e-9 and dy < 0):
+        dx, dy = -dx, -dy
+    return round(dx, 6), round(dy, 6)
+
+
+@pytest.mark.parametrize("simbolo", [s for s in BIBLIOTECA if _solo_lineas(s)], ids=lambda s: s.id)
+def test_tramado_continuo_entre_celdas(simbolo):
+    """Cada extremo de una raya tiene su continuación en la celda vecina (misma dirección)."""
+    lineas = _lineas(simbolo)
+    extremos = [
+        (round(x, 6), round(y, 6), _direccion(lin)) for lin in lineas for x, y in (lin.p0, lin.p1)
+    ]
+    conjunto = set(extremos)
+    for x, y, d in extremos:
+        assert any((round(x + dx, 6), round(y + dy, 6), d) in conjunto for dx, dy in _VECINOS), (
+            f"{simbolo.id}: la raya que termina en ({x}, {y}) no sigue en la celda vecina"
+        )
+
+
+def _desplazamiento(linea: Linea) -> tuple[tuple[float, float], float]:
+    """Dirección y posición de la raya, con período 1 al trasladar la celda."""
+    d = _direccion(linea)
+    x, y = linea.p0
+    if d == (1.0, 0.0):
+        return d, y
+    if d in ((0.0, 1.0), (0.0, -1.0)):
+        return d, x
+    return d, (x + y) if d[1] < 0 else (y - x)
+
+
+@pytest.mark.parametrize("simbolo", [s for s in BIBLIOTECA if _solo_lineas(s)], ids=lambda s: s.id)
+def test_espaciado_parejo_entre_celdas(simbolo):
+    """Las rayas paralelas quedan equiespaciadas también al repetir la celda."""
+    por_direccion: dict[tuple[float, float], set[float]] = {}
+    for linea in _lineas(simbolo):
+        d, pos = _desplazamiento(linea)
+        por_direccion.setdefault(d, set()).add(round(pos % 1.0, 6) % 1.0)
+    for d, posiciones in por_direccion.items():
+        orden = sorted(posiciones)
+        saltos = [b - a for a, b in zip(orden, orden[1:], strict=False)] + [
+            1 - orden[-1] + orden[0]
+        ]
+        assert max(saltos) - min(saltos) < 1e-4, f"{simbolo.id} {d}: espaciado {saltos}"

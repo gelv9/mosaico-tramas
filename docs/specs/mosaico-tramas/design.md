@@ -139,24 +139,24 @@ class MosaicoConfig(BaseModel, frozen=True):
 
 ### 4.2 Catálogo (23 candidatos, coberturas medidas con el prototipo)
 
-Bocetos en una grilla de 5 × 5 caracteres (`█` = tinta). Las líneas van de borde a borde de la celda, para que en zonas parejas formen un tramado continuo, como en un grabado.
+Las líneas van de borde a borde de la celda y con **espaciado parejo también entre celdas vecinas**, para que en zonas parejas formen un tramado continuo, como en un grabado. Esto lo verifica un test geométrico (ver la corrección durante la T7).
 
 | id | familia | boceto | trazos | cobertura |
 |---|---|---|---|---|
 | `punto` | punto | `·····` `·····` `··●··` `·····` `·····` | 1 | **2,0 %** |
 | `diag1` | diagonal | `/` de esquina a esquina | 1 | 9,9 % |
-| `diag2` | diagonal | `//` (x+y = ⅔ y 4⁄3) | 2 | 13,2 % |
-| `diag3` | diagonal | `///` | 3 | 19,8 % |
+| `diag2` | diagonal | `///` doble densidad (x+y = ½, 1, 3⁄2) | 3 | 19,7 % |
+| `diag3` | diagonal | triple densidad (x+y = ⅓ … 5⁄3) | 5 | 29,5 % |
 | `horiz1` | horizontal | `—` al centro | 1 | 7,1 % |
-| `horiz2` | horizontal | `=` (a ⅓ y ⅔) | 2 | 14,3 % |
-| `horiz3` | horizontal | `≡` (a ¼, ½ y ¾) | 3 | 21,4 % |
+| `horiz2` | horizontal | `=` (a ¼ y ¾) | 2 | 14,3 % |
+| `horiz3` | horizontal | `≡` (a ⅙, ½ y ⅚) | 3 | 21,4 % |
 | `vert1` | vertical | `│` al centro | 1 | 7,1 % |
 | `cruz` | cruz | `+` | 2 | 13,8 % |
 | `aspa1` | aspa | `X` de esquina a esquina | 2 | 19,3 % |
-| `aspa2` | aspa | `XX`: 2 `/` + 2 `\` | 4 | 24,3 % |
+| `aspa2` | aspa | `diag2` + una `\` central | 4 | 28,1 % |
 | `aspa3` | aspa | trama cruzada densa: 3 `/` + 3 `\` | 6 | 36,5 % |
-| `reja1` | reja | `#` (a ⅓ y ⅔) | 4 | 26,5 % |
-| `reja2` | reja | reja densa: 3 horizontales + 3 verticales | 6 | 38,3 % |
+| `reja1` | reja | `#` (a ¼ y ¾) | 4 | 26,5 % |
+| `reja2` | reja | reja densa (a ⅙, ½ y ⅚) | 6 | 38,2 % |
 | `asterisco` | asterisco | `+` + `X` | 4 | 31,6 % |
 | `bloque50` | bloque | cuadrado relleno centrado, de lado 0,5 | 1 | 25,1 % |
 | `bloque60` | bloque | cuadrado relleno centrado, de lado 0,6 | 1 | 36,2 % |
@@ -193,14 +193,14 @@ elegir la mejor clave; si no hay ninguna → ErrorBibliotecaSimbolos (RF2.7)
 - La búsqueda es por backtracking sobre la lista ordenada y poda en cuanto un gap queda por debajo de 6 o se repite una familia. Tarda milisegundos y el resultado se cachea por N.
 - Resultado del prototipo, con N : gap mínimo → símbolos:
 
-| N | gap mín. | niveles 1…N (resultado real de `elegir_simbolos`, T6) |
+| N | gap mín. | niveles 1…N (resultado real de `elegir_simbolos`) |
 |---|---|---|
 | 5 | 23,6 | punto 2 · reja1 27 · triangulo 50 · tres_cuartos 75 · lleno 100 |
 | 6 | 15,2 | punto · aspa1 19 · bloque60 36 · tri_rayas 60 · tres_cuartos 75 · lleno |
 | 7 | 12,5 | punto · aspa1 19 · bloque60 36 · triangulo 50 · tres_cuartos 75 · esquina 88 · lleno |
 | 8 | 11,4 | punto · cruz 14 · bloque50 25 · reja2 38 · triangulo 50 · tres_cuartos 75 · esquina 88 · lleno |
-| 9 | 10,8 | punto · diag2 13 · aspa2 24 · bloque60 36 · triangulo 50 · mitad_rayas 64 · tres_cuartos 75 · esquina 88 · lleno |
-| 10 | 7,3 | punto · diag1 10 · aspa1 19 · reja1 27 · bloque60 36 · triangulo 50 · mitad_rayas 64 · tres_cuartos 75 · esquina 88 · lleno |
+| 9 | 10,8 | punto · cruz 14 · bloque50 25 · aspa3 36 · triangulo 50 · mitad_rayas 64 · tres_cuartos 75 · esquina 88 · lleno |
+| 10 | 7,6 | punto · cruz 14 · horiz3 21 · diag3 29 · reja2 38 · triangulo 50 · mitad_rayas 64 · tres_cuartos 75 · esquina 88 · lleno |
 
 ## 5. Preprocesamiento (`imagen.py`)
 
