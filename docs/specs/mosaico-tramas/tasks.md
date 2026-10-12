@@ -161,10 +161,10 @@
 
 ## Fase 5 — Verificación (después del Checkpoint D)
 
-- [ ] **V1** — `pytest` completo, incluido `-m slow`, y `ruff check`.
-- [ ] **V2** — Hoja de muestra del estilo clásico (N = 6 fijo desde el checkpoint D).
-- [ ] **V3** — *(pedir al usuario: un retrato, una mascota y un paisaje)*. Para cada imagen: PDFs en A4 y Letter × leyenda `below` / `separate`, más el PNG.
-- [ ] **V4** — Informe: cada CA con su estado (cumple / no cumple / parcial), observaciones visuales y ajustes propuestos.
+- [x] **V1** — `pytest` completo, incluido `-m slow`, y `ruff check`.
+- [x] **V2** — Hoja de muestra del estilo clásico (N = 6 fijo desde el checkpoint D).
+- [x] **V3** — *(pedir al usuario: un retrato, una mascota y un paisaje)*. Para cada imagen: PDFs en A4 y Letter × leyenda `below` / `separate`, más el PNG.
+- [x] **V4** — Informe: cada CA con su estado (cumple / no cumple / parcial), observaciones visuales y ajustes propuestos.
 
 ## Trazabilidad CA → tarea
 
