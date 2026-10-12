@@ -37,7 +37,7 @@
 ### RF1 — Cantidad de símbolos configurable
 
 - **RF1.1** — THE SYSTEM SHALL usar **N = 6 símbolos fijos** (estilo clásico, ver RF2.4) *(enmienda del checkpoint D: estilo clásico de la referencia)*. *Historia: antes N era configurable entre 5 y 7.*
-- **RF1.2** — THE SYSTEM SHALL generar N + 1 niveles: la celda vacía más N símbolos. La celda vacía no se cuenta dentro de N.
+- **RF1.2** — THE SYSTEM SHALL generar **N niveles, uno por símbolo, sin celdas vacías**: toda celda lleva número y símbolo, y la zona más clara se representa con el **punto** (nivel 1) *(enmienda posterior a la Fase 5: no hay celdas vacías)*. *Historia: antes había un nivel 0 vacío para las luces, que fue un error de interpretación repetido; el usuario lo corrigió.*
 - **RF1.3** — IF se pide una cantidad de símbolos distinta de 6, THEN THE SYSTEM SHALL rechazar la configuración con el mensaje en español *"La cantidad de símbolos es fija: el estilo clásico usa 6 (valor recibido: X)."*
 - ~~**RF1.4**~~ — *Eliminado en el checkpoint D: el set clásico no usa el triángulo, así que la opción `usar_triangulo` deja de existir.*
 
@@ -55,16 +55,16 @@
 
 ### RF3 — Cuantización que aprovecha todos los niveles
 
-- **RF3.1** — THE SYSTEM SHALL ofrecer tres métodos de cuantización a N + 1 niveles:
+- **RF3.1** — THE SYSTEM SHALL ofrecer tres métodos de cuantización a **N niveles** (1…N): `quantiles` (**por defecto**, cada nivel recibe ≈ 1/N de las celdas), `kmeans` (k-means 1D con k = N, determinista) y `uniform` (bins uniformes, solo para comparar).
   - `quantiles` (**por defecto**): umbrales en los cuantiles de la luminancia, de modo que cada nivel reciba ≈ 1/(N+1) de las celdas;
   - `kmeans`: k-means 1D sobre la luminancia, con k = N + 1 e inicialización y desempate determinísticos;
   - `uniform`: bins uniformes, como en el prototipo, solo para comparar.
-- **RF3.2** — THE SYSTEM SHALL asignar el nivel 0 (vacío) a las celdas más claras y el nivel N a las más oscuras.
+- **RF3.2** — THE SYSTEM SHALL asignar el nivel 1 (punto) a las celdas más claras y el nivel N (celda llena) a las más oscuras.
 - **RF3.3** — IF hay luminancias repetidas que hacen colapsar dos cuantiles, THEN THE SYSTEM SHALL repartir los empates de forma determinística (por rango estable) para que ningún nivel quede vacío sin necesidad.
 - **RF3.4** — WHERE la reducción de ruido está activa, THE SYSTEM SHALL reasignar al nivel mayoritario de sus vecinos todo componente conexo (vecindad de 8) de un mismo nivel cuyo tamaño sea **menor al umbral**. El umbral es configurable de 2 a 20 celdas y por defecto vale **2**, que elimina las celdas sueltas. Si hay empate entre vecinos, gana el nivel más cercano al original.
 - **RF3.5** — WHERE el límite de oscuros está activo, THE SYSTEM SHALL asegurar que el nivel N no supere el **porcentaje máximo de celdas configurado**. El rango va de 1 % a 100 % y el valor por defecto propuesto es **8 %**. Las celdas que exceden el límite pasan al nivel N − 1, empezando por las menos oscuras.
 - **RF3.6** — THE SYSTEM SHALL calcular y exponer la **distribución de celdas por nivel**: cantidad y porcentaje de cada nivel 0…N.
-- **RF3.7** — IF algún nivel queda con menos del **50 % de la cuota ideal** (100/(N+1) %), THEN THE SYSTEM SHALL emitir el aviso de nivel infrautilizado, indicando el nivel y su porcentaje.
+- **RF3.7** — IF algún nivel queda con menos del **50 % de la cuota ideal** (100/N %), THEN THE SYSTEM SHALL emitir el aviso de nivel infrautilizado, indicando el nivel y su porcentaje.
 - **RF3.8** — THE SYSTEM SHALL aplicar los pasos en este orden: cuantización → límite de oscuros → reducción de ruido → verificación del límite de oscuros. Esa última verificación existe porque la reducción de ruido puede volver a superar el límite.
 
 ### RF4 — Grilla
@@ -104,13 +104,13 @@
 - **RF6.4** — IF la celda ya queda por debajo de CELDA_MIN sin la leyenda, THEN THE SYSTEM SHALL aplicar RF4.6a, es decir, dar error con sugerencias y no generar el PDF.
 - **RF6.5** — WHERE la leyenda es `separate`, THE SYSTEM SHALL poner siempre la leyenda en su propia página, inmediatamente después de la plantilla.
 - **RF6.6** — THE SYSTEM SHALL mostrar en la leyenda, ordenados de claro a oscuro, el número de cada nivel junto a su símbolo dibujado **a escala real** (el tamaño de celda de la plantilla) y **ampliado** (propuesta: ≥ 10 mm).
-- **RF6.7** — THE SYSTEM SHALL incluir en la leyenda, en inglés, la instrucción *"Draw the symbol shown for each number. Leave unnumbered cells blank."*
-- **RF6.8** — WHERE la marca de blanco está activa, THE SYSTEM SHALL agregar a la leyenda la muestra de la celda vacía con su puntito tenue y el texto *"Cells with a faint dot: leave blank."* *(decidido, Q4b)*.
+- **RF6.7** — THE SYSTEM SHALL incluir en la leyenda, en inglés, la instrucción *"Draw the symbol shown for each number in every cell."* *(enmienda posterior a la Fase 5: no hay celdas vacías)*
+- ~~**RF6.8**~~ — *Eliminado: no hay celdas vacías que marcar.*
 
 ### RF7 — Contenido del PDF
 
-- **RF7.1** — THE SYSTEM SHALL generar la **plantilla**: la grilla completa con el número del nivel (1…N) centrado en cada celda que no esté vacía. Las celdas vacías no llevan número.
-- **RF7.1a** — WHERE la marca de blanco está activa (opción, **activada por defecto**), THE SYSTEM SHALL imprimir en cada celda vacía de la plantilla un puntito centrado en el mismo gris que la grilla, con un diámetro de ≈ 8 % del lado de la celda (mínimo 0,3 mm), para indicar que se deja en blanco a propósito *(decidido, Q4b)*. En la página de solución no se imprime.
+- **RF7.1** — THE SYSTEM SHALL generar la **plantilla**: la grilla completa con el número del nivel (1…N) centrado en **cada** celda *(enmienda posterior a la Fase 5: no hay celdas vacías)*.
+- ~~**RF7.1a**~~ — *Eliminado: no hay celdas vacías que marcar.*
 - **RF7.2a** — THE SYSTEM SHALL permitir elegir el **estilo de grilla** de la plantilla: **líneas** grises (por defecto) o **puntos** grises en las esquinas de las celdas, como en la referencia. El mismo estilo se usa en la grilla tenue opcional de la solución y en los recuadros de la leyenda *(enmienda del checkpoint D)*.
 - **RF7.2** — THE SYSTEM SHALL dibujar las líneas de la grilla y los números en **gris claro**. Propuesta: líneas (o puntos) de 0,3 pt al **18 % de negro**, un gris muy claro que no afecta el dibujo final *(ajuste del checkpoint E; antes 35 %)* y números al 50 % de negro, con un tamaño de fuente de ≈ 45 % del lado de la celda (mínimo 4 pt).
 - **RF7.3** — THE SYSTEM SHALL incluir la **leyenda** según RF6.
@@ -142,7 +142,7 @@
 |---|---|---|
 | CA1 | Los 6 símbolos siguen el orden fijo de RF2.4: punto, /, \, X, asterisco y lleno. La cobertura es no decreciente, con igualdad solo entre / y \, y el salto vacío → punto es ≥ 1,5 pp. | RF2.3, RF2.4 |
 | CA2 | Con una cantidad de símbolos distinta de 6 (o no entera), se lanza el error en español de RF1.3. | RF1.3 |
-| CA3 | Con `quantiles`, sin reducción de ruido ni límite de oscuros, en una imagen de prueba con buen rango tonal (un degradado sintético y una foto de prueba), ningún nivel tiene menos de **X = 50 % de 100/(N+1) %** de las celdas. Es decir, X = 8,3 % para N = 5 y X = 6,25 % para N = 7. | RF3.1, RF3.7 |
+| CA3 | Con `quantiles`, sin reducción de ruido ni límite de oscuros, en una imagen de prueba con buen rango tonal (un degradado sintético y una foto de prueba), ningún nivel tiene menos de **X = 50 % de 100/N %** de las celdas (8,3 % con N = 6). | RF3.1, RF3.7 |
 | CA4 | Para cada papel (A4, Letter, A3 y Tabloid) y cada orientación, el MediaBox del PDF mide lo indicado en RF5.1 (±0,01 pt), y el contenido (grilla y leyenda) queda dentro del área útil. | RF5.1, RF5.4 |
 | CA5 | Con `below`, si la leyenda entra: 1 página de plantilla con la leyenda incluida. Si no entra (porque con ella la celda baja de 4 mm y sin ella no): la leyenda va en una página aparte y se emite el aviso de RF6.3. | RF6.2, RF6.3 |
 | CA6 | Con `separate`, la leyenda siempre sale en su propia página. | RF6.5 |
@@ -158,9 +158,9 @@
 | CA11 | Con la reducción de ruido activa (umbral 2), no queda ninguna celda aislada: ningún componente de tamaño 1. | RF3.4 |
 | CA12 | El núcleo se importa y genera sin que `streamlit` esté en `sys.modules`. | RNF3 |
 | CA13 | Una grilla de 100 × 140 en papel personalizado de 430 × 600 mm se genera en < 5 s. Es un test marcado `slow`, porque depende de la máquina. | RNF1 |
-| CA14 | Las celdas vacías no tienen número en la plantilla, verificado extrayendo el texto del PDF. | RF7.1 |
+| CA14 | **Todas** las celdas de la plantilla tienen su número; ninguna queda vacía. | RF1.2, RF7.1 |
 | CA16 | Con el estilo de grilla `puntos`, la plantilla tiene un punto por cada esquina de celda ((cols + 1) × (filas + 1)) y ninguna línea de grilla; con `líneas`, ningún punto de grilla. | RF7.2a |
-| CA15 | Con la marca de blanco activa, la plantilla tiene un puntito gris por cada celda vacía, y la solución no tiene ninguno. Con la marca desactivada, no aparece ningún puntito. | RF7.1a, RF6.8 |
+| ~~CA15~~ | *Eliminado junto con la marca de vacío.* | — |
 
 ## 5. Valores propuestos para los umbrales abiertos (resumen)
 

@@ -155,6 +155,8 @@ La biblioteca es el set fijo de la referencia que encontró el usuario (un libro
 
 **Estilo de grilla (RF7.2a).** `EstiloGrilla.LINEAS` dibuja las líneas como antes. `EstiloGrilla.PUNTOS` dibuja un punto gris (Form XObject `punto_grilla`, radio 0,35 pt) en cada esquina de celda. En el PNG, el punto va en la esquina superior izquierda de cada tile, y la última fila y columna se cierran aparte.
 
+**Sin celdas vacías (enmienda posterior a la Fase 5).** La cuantización usa N niveles (1…N): internamente se calculan N − 1 cortes y al resultado se le suma 1. `Distribucion` reporta los niveles 1…N (la posición i es el nivel i + 1). Se eliminan la marca de vacío, la entrada 'blank' de la leyenda y el campo `marca_blanco`.
+
 ### 4.2 Catálogo (10 candidatos, coberturas medidas con fibra de 0,5 mm en celda de 4 mm)
 
 Todos los símbolos pasan la regla física de RF2.6: como máximo 3 trazos y al menos 2 mm entre rayas paralelas en una celda de 4 mm, contando la celda vecina. Las rayas van de borde a borde y con espaciado parejo entre celdas vecinas, para que las zonas parejas formen un tramado continuo. Tests geométricos verifican las dos cosas.
