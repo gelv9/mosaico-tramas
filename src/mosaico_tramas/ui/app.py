@@ -31,6 +31,7 @@ METODOS = {
 }
 ORIENTACIONES = {"auto": "Automática", "portrait": "Vertical", "landscape": "Horizontal"}
 LEYENDAS = {"below": "Debajo de la grilla", "separate": "En hoja aparte"}
+ESTILOS_GRILLA = {"lines": "Líneas", "dots": "Puntos en las esquinas"}
 
 
 def _etiqueta_papel(nombre: str) -> str:
@@ -111,6 +112,13 @@ def _controles(settings: Settings) -> dict[str, object]:
     )
 
     barra.subheader("Contenido del PDF")
+    estilo_grilla = barra.radio(
+        "Estilo de grilla",
+        list(ESTILOS_GRILLA),
+        format_func=ESTILOS_GRILLA.get,
+        key="estilo_grilla",
+        horizontal=True,
+    )
     leyenda = barra.radio("Leyenda", list(LEYENDAS), format_func=LEYENDAS.get, key="leyenda")
     solucion = barra.checkbox("Incluir página de solución", value=True, key="incluir_solucion")
     marca = barra.checkbox("Puntito tenue en celdas vacías", value=True, key="marca_blanco")
@@ -134,6 +142,7 @@ def _controles(settings: Settings) -> dict[str, object]:
         "incluir_solucion": solucion,
         "marca_blanco": marca,
         "grilla_en_solucion": grilla_sol,
+        "estilo_grilla": estilo_grilla,
     }
 
 

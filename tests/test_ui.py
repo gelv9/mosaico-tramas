@@ -52,6 +52,7 @@ def test_tiene_todos_los_controles(app: AppTest):
         "leyenda",
         "incluir_solucion",
         "marca_blanco",
+        "estilo_grilla",
     }
     for clave in claves:
         assert clave in app.session_state, clave

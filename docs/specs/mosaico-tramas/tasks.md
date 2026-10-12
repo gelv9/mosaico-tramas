@@ -153,7 +153,7 @@
   - Cubre: RF1.1, RF1.3, RF2.1, RF2.4, RF2.6, RF2.6a y RF2.7.
   - Test (**CA1, CA2, CA9**): orden y coberturas, mensaje en español para N ≠ 6, regla física con el asterisco radial y tramado continuo.
 
-- [ ] **T30 — Estilo de grilla (líneas o puntos).** Config `estilo_grilla`, PDF (plantilla, solución y leyenda), PNG y control en la UI.
+- [x] **T30 — Estilo de grilla (líneas o puntos).** Config `estilo_grilla`, PDF (plantilla, solución y leyenda), PNG y control en la UI.
   - Cubre: RF7.2a.
   - Test (**CA16**): cantidad de puntos de grilla = (cols+1)·(filas+1) y ninguna línea de grilla con `dots`; ningún punto con `lines`; PNG determinista en los dos estilos.
 

@@ -62,3 +62,19 @@ def test_png_determinista():
     niveles = _niveles()
     assert png_solucion(niveles, SIMBOLOS, 1200) == png_solucion(niveles, SIMBOLOS, 1200)
     assert png_plantilla(niveles, 1200, True) == png_plantilla(niveles, 1200, True)
+
+
+# --- T30: estilo de grilla ---
+
+
+def test_plantilla_con_puntos_es_distinta_y_determinista():
+    niveles = _niveles()
+    lineas = png_plantilla(niveles, 1200, True)
+    puntos = png_plantilla(niveles, 1200, True, estilo_grilla="dots")
+    assert puntos != lineas
+    assert puntos == png_plantilla(niveles, 1200, True, estilo_grilla="dots")
+    img = _abrir(puntos)
+    t = tamano_tile(20, 30, 1200)
+    # A mitad de un borde de celda no hay línea, en la esquina sí hay punto
+    assert img[0, t // 2] == 255
+    assert img[0, 0] < 255

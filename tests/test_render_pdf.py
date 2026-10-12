@@ -16,6 +16,8 @@ from mosaico_tramas.render_pdf import (
     INSTRUCCION,
     INSTRUCCION_MARCA,
     NOMBRE_MARCA,
+    NOMBRE_PUNTO_GRILLA,
+    NOMBRE_PUNTO_GRILLA_TENUE,
     generar_pdf,
     nombre_form,
 )
@@ -235,3 +237,26 @@ def test_solucion_centrada_en_la_pagina():
     _, gy0, _, gy1 = layout.rect_grilla
     dy = float(desplazamiento.group(1))
     assert (gy0 + dy) - ay0 == pytest.approx(ay1 - (gy1 + dy), abs=0.01)
+
+
+# --- T30: estilo de grilla (CA16) ---
+
+
+def test_ca16_grilla_de_puntos_en_cada_esquina():
+    lector, _, layout, _ = _generar(filas=20, cols=15, leyenda="separate", estilo_grilla="dots")
+    contenido = _contenido(lector, 0)
+    formas = Counter(_FORM.findall(contenido))
+    assert formas[NOMBRE_PUNTO_GRILLA] == (layout.columnas + 1) * (layout.filas + 1)
+    # Sin la leyenda en la página, no queda ningún segmento de línea (la grilla son puntos)
+    assert not re.search(r" l\n", contenido)
+
+
+def test_ca16_grilla_de_lineas_sin_puntos():
+    lector, _, _, _ = _generar(filas=20, cols=15, leyenda="separate")
+    assert NOMBRE_PUNTO_GRILLA not in _FORM.findall(_contenido(lector, 0))
+
+
+def test_grilla_tenue_de_la_solucion_respeta_el_estilo():
+    lector, _, layout, _ = _generar(estilo_grilla="dots", grilla_en_solucion=True)
+    formas = Counter(_FORM.findall(_contenido(lector, 1)))
+    assert formas[NOMBRE_PUNTO_GRILLA_TENUE] == (layout.columnas + 1) * (layout.filas + 1)

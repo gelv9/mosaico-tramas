@@ -89,7 +89,11 @@ def generar_mosaico(
 
     lado = lado_png or config.png_lado_px
     solucion = png_solucion(cuantizacion.niveles, simbolos, lado) if con_png else b""
-    plantilla = png_plantilla(cuantizacion.niveles, lado, config.marca_blanco) if con_png else b""
+    plantilla = (
+        png_plantilla(cuantizacion.niveles, lado, config.marca_blanco, config.estilo_grilla)
+        if con_png
+        else b""
+    )
 
     return Resultado(
         config=config,

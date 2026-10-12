@@ -50,16 +50,25 @@ def png_solucion(
     return _a_png(_componer(tiles, niveles))
 
 
+def _lado_punto(t: int) -> int:
+    """Lado en px del punto de esquina de la grilla de puntos."""
+    return max(1, round(t / 14))
+
+
 @lru_cache(maxsize=32)
-def _tiles_plantilla(n: int, t: int, marca_blanco: bool) -> Imagen:
-    """Tiles con borde gris arriba y a la izquierda, número gris y marca en el vacío."""
+def _tiles_plantilla(n: int, t: int, marca_blanco: bool, puntos: bool) -> Imagen:
+    """Tiles con borde (o punto de esquina) arriba a la izquierda, número y marca."""
     fuente = ImageFont.load_default(size=max(6, round(0.45 * t)))
     tiles = []
     for nivel in range(n + 1):
         tile = Image.new("L", (t, t), 255)
         dibujo = ImageDraw.Draw(tile)
-        dibujo.line([(0, 0), (t - 1, 0)], fill=GRIS_GRILLA)
-        dibujo.line([(0, 0), (0, t - 1)], fill=GRIS_GRILLA)
+        if puntos:
+            lado = _lado_punto(t)
+            dibujo.rectangle([0, 0, lado - 1, lado - 1], fill=GRIS_GRILLA)
+        else:
+            dibujo.line([(0, 0), (t - 1, 0)], fill=GRIS_GRILLA)
+            dibujo.line([(0, 0), (0, t - 1)], fill=GRIS_GRILLA)
         if nivel > 0:
             dibujo.text((t / 2, t / 2), str(nivel), fill=GRIS_NUMEROS, font=fuente, anchor="mm")
         elif marca_blanco:
@@ -69,13 +78,28 @@ def _tiles_plantilla(n: int, t: int, marca_blanco: bool) -> Imagen:
     return np.stack(tiles)
 
 
-def png_plantilla(niveles: npt.NDArray[np.uint8], lado_px: int, marca_blanco: bool) -> bytes:
-    """Plantilla: grilla y números en gris; las celdas vacías sin número."""
+def png_plantilla(
+    niveles: npt.NDArray[np.uint8],
+    lado_px: int,
+    marca_blanco: bool,
+    estilo_grilla: str = "lines",
+) -> bytes:
+    """Plantilla: grilla (líneas o puntos) y números en gris; las celdas vacías sin número."""
     filas, cols = niveles.shape
     t = tamano_tile(cols, filas, lado_px)
     n = int(niveles.max()) if niveles.size else 0
-    imagen = _componer(_tiles_plantilla(max(n, 1), t, marca_blanco), niveles).copy()
+    puntos = estilo_grilla == "dots"
+    imagen = _componer(_tiles_plantilla(max(n, 1), t, marca_blanco, puntos), niveles).copy()
     # Cierra la grilla a la derecha y abajo
-    imagen[:, -1] = np.minimum(imagen[:, -1], GRIS_GRILLA)
-    imagen[-1, :] = np.minimum(imagen[-1, :], GRIS_GRILLA)
+    if puntos:
+        lado = _lado_punto(t)
+        for k in range(cols + 1):
+            x = min(k * t, cols * t - lado)
+            imagen[-lado:, x : x + lado] = GRIS_GRILLA
+        for f in range(filas + 1):
+            y = min(f * t, filas * t - lado)
+            imagen[y : y + lado, -lado:] = GRIS_GRILLA
+    else:
+        imagen[:, -1] = np.minimum(imagen[:, -1], GRIS_GRILLA)
+        imagen[-1, :] = np.minimum(imagen[-1, :], GRIS_GRILLA)
     return _a_png(imagen)

@@ -163,3 +163,10 @@ def test_config_hashable_y_serializable():
 def test_ya_no_existe_la_opcion_del_triangulo():
     with pytest.raises(ConfigInvalidaError, match="Parámetro desconocido: 'usar_triangulo'"):
         MosaicoConfig.crear(usar_triangulo=False)
+
+
+def test_estilo_de_grilla():
+    assert MosaicoConfig.crear().estilo_grilla == "lines"
+    assert MosaicoConfig.crear(estilo_grilla="dots").estilo_grilla == "dots"
+    with pytest.raises(ConfigInvalidaError, match="estilo de grilla debe ser uno de"):
+        MosaicoConfig.crear(estilo_grilla="rayas")

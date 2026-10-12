@@ -37,6 +37,13 @@ class Recorte(StrEnum):
     CENTER = "center"
 
 
+class EstiloGrilla(StrEnum):
+    """Grilla de la plantilla: líneas grises o puntos en las esquinas (RF7.2a)."""
+
+    LINEAS = "lines"
+    PUNTOS = "dots"
+
+
 class UbicacionLeyenda(StrEnum):
     """Dónde va la leyenda de símbolos."""
 
@@ -100,6 +107,7 @@ class MosaicoConfig(BaseModel):
     incluir_solucion: bool = True
     marca_blanco: bool = True
     grilla_en_solucion: bool = False
+    estilo_grilla: EstiloGrilla = EstiloGrilla.LINEAS
     percentil_bajo: float = 2.0
     percentil_alto: float = 98.0
     png_lado_px: int = 2000
@@ -178,6 +186,11 @@ class MosaicoConfig(BaseModel):
     @classmethod
     def _v_leyenda(cls, v: Any) -> UbicacionLeyenda:
         return _opcion(v, UbicacionLeyenda, "La ubicación de la leyenda debe ser una de")
+
+    @field_validator("estilo_grilla", mode="before")
+    @classmethod
+    def _v_estilo_grilla(cls, v: Any) -> EstiloGrilla:
+        return _opcion(v, EstiloGrilla, "El estilo de grilla debe ser uno de")
 
     @field_validator("papeles", mode="before")
     @classmethod

@@ -15,7 +15,7 @@ import numpy.typing as npt
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfgen.canvas import Canvas
 
-from mosaico_tramas.config import MosaicoConfig
+from mosaico_tramas.config import EstiloGrilla, MosaicoConfig
 from mosaico_tramas.layout import (
     ALTO_ENTRADA_MM,
     ALTO_INSTRUCCION_MM,
@@ -44,6 +44,9 @@ INSTRUCCION = "Draw the symbol shown for each number. Leave unnumbered cells bla
 INSTRUCCION_MARCA = "Cells with a faint dot: leave blank."
 
 NOMBRE_MARCA = "marca_blanco"
+NOMBRE_PUNTO_GRILLA = "punto_grilla"
+NOMBRE_PUNTO_GRILLA_TENUE = "punto_grilla_tenue"
+RADIO_PUNTO_GRILLA = 0.5  # pt (diámetro ≈ 0,35 mm)
 
 
 def nombre_form(simbolo: Simbolo) -> str:
@@ -117,6 +120,16 @@ def _definir_forms(canvas: Canvas, simbolos: tuple[Simbolo, ...], celda: float) 
     canvas.beginForm(NOMBRE_MARCA, lowerx=0, lowery=0, upperx=celda, uppery=celda)
     _dibujar_marca(canvas, 0, celda, celda, celda)
     canvas.endForm()
+    # Puntos de la grilla (RF7.2a), centrados en el origen del form
+    r = RADIO_PUNTO_GRILLA
+    for nombre, gris in (
+        (NOMBRE_PUNTO_GRILLA, GRIS_GRILLA),
+        (NOMBRE_PUNTO_GRILLA_TENUE, GRIS_GRILLA_SOLUCION),
+    ):
+        canvas.beginForm(nombre, lowerx=-r, lowery=-r, upperx=r, uppery=r)
+        canvas.setFillGray(gris)
+        canvas.circle(0, 0, r, stroke=0, fill=1)
+        canvas.endForm()
 
 
 def _celdas(niveles: npt.NDArray[np.uint8], layout: Layout) -> list[tuple[int, float, float]]:
@@ -131,9 +144,18 @@ def _celdas(niveles: npt.NDArray[np.uint8], layout: Layout) -> list[tuple[int, f
     ]
 
 
-def _grilla(canvas: Canvas, layout: Layout, gris: float) -> None:
+def _grilla(
+    canvas: Canvas, layout: Layout, gris: float, estilo: EstiloGrilla, tenue: bool = False
+) -> None:
+    """Grilla de líneas, o un punto en cada esquina de celda (RF7.2a)."""
     x0, y0, x1, y1 = layout.rect_grilla
     c = layout.celda_pt
+    if estilo is EstiloGrilla.PUNTOS:
+        nombre = NOMBRE_PUNTO_GRILLA_TENUE if tenue else NOMBRE_PUNTO_GRILLA
+        for f in range(layout.filas + 1):
+            for k in range(layout.columnas + 1):
+                _colocar_form(canvas, nombre, x0 + k * c, y1 - f * c)
+        return
     lineas = [(x0 + k * c, y0, x0 + k * c, y1) for k in range(layout.columnas + 1)]
     lineas += [(x0, y1 - f * c, x1, y1 - f * c) for f in range(layout.filas + 1)]
     canvas.saveState()
@@ -154,7 +176,7 @@ def _pagina_plantilla(
     canvas: Canvas, niveles: npt.NDArray[np.uint8], layout: Layout, config: MosaicoConfig
 ) -> None:
     """Grilla gris con el número de cada celda no vacía y la marca en las vacías (RF7.1–7.2)."""
-    _grilla(canvas, layout, GRIS_GRILLA)
+    _grilla(canvas, layout, GRIS_GRILLA, config.estilo_grilla)
     c = layout.celda_pt
     tamano = max(4.0, 0.45 * c)
     canvas.setFont(FUENTE, tamano)
@@ -182,7 +204,7 @@ def _pagina_solucion(
     _, gy0, _, gy1 = layout.rect_grilla
     canvas.translate(0, (ay0 + ay1) / 2 - (gy0 + gy1) / 2)
     if config.grilla_en_solucion:
-        _grilla(canvas, layout, GRIS_GRILLA_SOLUCION)
+        _grilla(canvas, layout, GRIS_GRILLA_SOLUCION, config.estilo_grilla, tenue=True)
     for nivel, x, y in _celdas(niveles, layout):
         if nivel > 0:
             _colocar_form(canvas, nombre_form(simbolos[nivel - 1]), x, y)
@@ -239,9 +261,20 @@ def _leyenda(
                 _dibujar_marca(canvas, x_caja, y_sup, lado, layout.celda_pt)
             else:
                 dibujar_simbolo(canvas, simbolo, x_caja, y_sup, lado)
-            canvas.setStrokeGray(GRIS_GRILLA)
-            canvas.setLineWidth(ANCHO_LINEA_GRILLA)
-            canvas.rect(x_caja, y_sup - lado, lado, lado, stroke=1, fill=0)
+            _caja(canvas, x_caja, y_sup - lado, lado, config.estilo_grilla)
+    canvas.restoreState()
+
+
+def _caja(canvas: Canvas, x: float, y: float, lado: float, estilo: EstiloGrilla) -> None:
+    """Recuadro de una entrada de la leyenda, con el mismo estilo que la grilla."""
+    canvas.saveState()
+    if estilo is EstiloGrilla.PUNTOS:
+        for px, py in ((x, y), (x + lado, y), (x, y + lado), (x + lado, y + lado)):
+            _colocar_form(canvas, NOMBRE_PUNTO_GRILLA, px, py)
+    else:
+        canvas.setStrokeGray(GRIS_GRILLA)
+        canvas.setLineWidth(ANCHO_LINEA_GRILLA)
+        canvas.rect(x, y, lado, lado, stroke=1, fill=0)
     canvas.restoreState()
 
 
