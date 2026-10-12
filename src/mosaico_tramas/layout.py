@@ -16,6 +16,7 @@ from mosaico_tramas.papel import (
     Orientacion,
     Papel,
     mm_a_pt,
+    obtener_papel,
     resolver_orientacion,
 )
 
@@ -286,3 +287,60 @@ def mensaje_celda_chica(
         cuerpo = ", ".join(opciones[:-1]) + (" o " if len(opciones) > 1 else "") + opciones[-1]
         texto += f" Opciones: {cuerpo}."
     return texto
+
+
+# --- Multi-papel (RF5.7, design.md §7.4) ---
+
+
+def calcular_layouts(config: MosaicoConfig, ancho_img: int, alto_img: int) -> dict[str, Layout]:
+    """Un layout por papel con la misma grilla; la fija el primer papel de la lista."""
+    personalizado = (
+        (config.papel_personalizado.ancho_mm, config.papel_personalizado.alto_mm)
+        if config.papel_personalizado is not None
+        else None
+    )
+    papeles = [obtener_papel(nombre, personalizado) for nombre in config.papeles]
+    layouts: dict[str, Layout] = {}
+    filas: int | None = None
+    for papel in papeles:
+        try:
+            layout = calcular_layout(config, ancho_img, alto_img, papel, filas_fijas=filas)
+        except CeldaDemasiadoChicaError as error:
+            if len(papeles) == 1:
+                raise
+            raise _error_multi_papel(
+                config, ancho_img, alto_img, papel, papeles, filas, error
+            ) from None
+        filas = layout.filas if filas is None else filas
+        layouts[papel.nombre] = layout
+    return layouts
+
+
+def _error_multi_papel(
+    config: MosaicoConfig,
+    ancho_img: int,
+    alto_img: int,
+    papel: Papel,
+    papeles: list[Papel],
+    filas: int | None,
+    error: CeldaDemasiadoChicaError,
+) -> CeldaDemasiadoChicaError:
+    """Rehace el error nombrando el papel que falla, con columnas que sirven para todos."""
+    orientacion = resolver_orientacion(config.orientacion, ancho_img, alto_img)
+    celda = _celda_completa(config, ancho_img, alto_img, papel, filas)
+    cols_max = columnas_maximas(config, ancho_img, alto_img, papeles)
+    mensaje = f"Falla el papel {papel.nombre}. " + mensaje_celda_chica(
+        config.columnas,
+        papel.nombre,
+        orientacion,
+        celda,
+        cols_max,
+        error.papel_sugerido,
+        error.personalizado_mm,
+    )
+    return CeldaDemasiadoChicaError(
+        mensaje,
+        columnas_max=cols_max,
+        papel_sugerido=error.papel_sugerido,
+        personalizado_mm=error.personalizado_mm,
+    )

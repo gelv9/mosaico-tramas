@@ -94,7 +94,7 @@
   - Cubre: RF4.6, RF4.6a y RF6.4.
   - Test (**CA7**): 60 columnas en A4 dan error y no se genera nada. Las columnas sugeridas, el papel sugerido y el personalizado sugerido dan cada uno una celda ≥ 4 mm (se verifica recalculando). El mensaje contiene "4 mm" y las tres opciones. Cuando ningún papel del registro sirve, esa sugerencia se omite.
 
-- [ ] **T18 — Layout multi-papel.** `calcular_layouts(config, proporcion) -> dict[papel, Layout]` con la grilla fija.
+- [x] **T18 — Layout multi-papel.** `calcular_layouts(config, proporcion) -> dict[papel, Layout]` con la grilla fija.
   - Cubre: RF5.7 y RF5.7a.
   - Test: A4 + Letter dan las mismas cols × filas. Si un papel falla, el error lo nombra y las sugerencias sirven para ambos.
 

@@ -10,6 +10,7 @@ from mosaico_tramas.layout import (
     ANCHO_ENTRADA_MM,
     alto_leyenda,
     calcular_layout,
+    calcular_layouts,
     entradas_por_fila,
 )
 from mosaico_tramas.papel import REGISTRO_PAPELES, Orientacion, mm_a_pt, papel_personalizado
@@ -192,3 +193,42 @@ def test_rf6_4_celda_chica_aun_sin_leyenda_da_error():
         calcular_layout(
             _config(columnas=60, leyenda="separate"), 1000, 1000, REGISTRO_PAPELES["A4"]
         )
+
+
+# --- T18: multi-papel ---
+
+
+def test_multi_papel_misma_grilla():
+    config = _config(columnas=40, papeles=["A4", "LETTER"])
+    layouts = calcular_layouts(config, 1000, 1300)
+    assert list(layouts) == ["A4", "LETTER"]
+    a4, letter = layouts["A4"], layouts["LETTER"]
+    assert (a4.columnas, a4.filas) == (letter.columnas, letter.filas)
+    assert a4.celda_pt != letter.celda_pt  # cambia el tamaño de celda, no la grilla
+
+
+def test_multi_papel_con_recorte_center_usa_el_primer_papel():
+    config = _config(columnas=40, papeles=["LETTER", "A4"], recorte="center")
+    layouts = calcular_layouts(config, 1000, 1300)
+    solo_letter = calcular_layout(config, 1000, 1300, REGISTRO_PAPELES["LETTER"])
+    assert layouts["A4"].filas == solo_letter.filas
+
+
+def test_multi_papel_falla_un_papel_y_lo_nombra():
+    # Imagen alta con 36 columnas: entra en A4 pero no en Letter (que es más bajo)
+    config = _config(columnas=36, papeles=["A4", "LETTER"], leyenda="separate")
+    with pytest.raises(CeldaDemasiadoChicaError) as info:
+        calcular_layouts(config, 1000, 1800)
+    assert "LETTER" in str(info.value)
+    columnas = info.value.columnas_max
+    assert columnas is not None
+    # Las columnas sugeridas sirven para los dos papeles
+    arreglada = _config(columnas=columnas, papeles=["A4", "LETTER"], leyenda="separate")
+    layouts = calcular_layouts(arreglada, 1000, 1800)
+    assert all(lay.celda_pt >= CELDA_MIN for lay in layouts.values())
+
+
+def test_multi_papel_custom():
+    config = _config(columnas=40, papeles=["A4", "CUSTOM"], papel_personalizado=(300, 400))
+    layouts = calcular_layouts(config, 1000, 1000)
+    assert layouts["CUSTOM"].papel.ancho_mm == 300
