@@ -132,11 +132,11 @@
 
 ## Bloque D — UI
 
-- [ ] **T26 — UI: controles y preview.** La barra lateral con todos los controles de RF8.2, la carga de la imagen, `generar_preview` cacheado, tabs (Resultado / Plantilla / Distribución), el histograma y los avisos.
+- [x] **T26 — UI: controles y preview.** La barra lateral con todos los controles de RF8.2, la carga de la imagen, `generar_preview` cacheado, tabs (Resultado / Plantilla / Distribución), el histograma y los avisos.
   - Cubre: RF8.1–RF8.4 y RF8.6.
   - Test: `test_ui.py` con `streamlit.testing.v1.AppTest`. La app arranca sin errores y sin imagen muestra una indicación. Con una imagen inyectada aparecen las tabs y el histograma. Una config con celda chica muestra el error en español.
 
-- [ ] **T27 — UI: sugerencia con un clic y descargas.** El botón "Usar N columnas", "Generar PDF" y la descarga del PDF, el ZIP o el PNG.
+- [x] **T27 — UI: sugerencia con un clic y descargas.** El botón "Usar N columnas", "Generar PDF" y la descarga del PDF, el ZIP o el PNG.
   - Cubre: RF4.6b y RF8.5.
   - Test (AppTest): al pulsar la sugerencia cambian las columnas y desaparece el error. Después de "Generar PDF" existen los botones de descarga, y con multi-papel la descarga es un ZIP.
 
