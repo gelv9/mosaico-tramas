@@ -44,7 +44,7 @@
 
 ## Bloque B — Imagen y cuantización
 
-- [ ] **T8 — Preprocesamiento.** `imagen.py`: `cargar_luminancia(bytes, max_mb)` (EXIF, alfa, L, float) y `a_grilla(lum, cols, filas, recorte, percentiles) -> (oscuridad, avisos)`.
+- [x] **T8 — Preprocesamiento.** `imagen.py`: `cargar_luminancia(bytes, max_mb)` (EXIF, alfa, L, float) y `a_grilla(lum, cols, filas, recorte, percentiles) -> (oscuridad, avisos)`.
   - Cubre: RP1–RP6 y RF4.3/RF4.4 (el recorte).
   - Test: `test_imagen.py`. Un PNG con alfa se compone sobre blanco y una imagen rotada por EXIF queda bien orientada. Bytes basura dan `ImagenInvalidaError` en español, igual que un archivo mayor al límite. La forma de la salida es la pedida. El estiramiento lleva p2→0 y p98→1, y una imagen plana emite `POCO_RANGO_TONAL`. `center` recorta al centro.
 
