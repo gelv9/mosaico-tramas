@@ -34,6 +34,11 @@ streamlit run src/mosaico_tramas/ui/app.py
 2. Ajustá los parámetros: la preview, la plantilla y el histograma se actualizan solos.
 3. Tocá **Generar PDF** y descargá el PDF (o el ZIP si elegiste varios papeles) y el PNG.
 
+> **Después de actualizar el código, reiniciá la app** (Ctrl+C y volvé a correr el comando).
+> Streamlit recarga solo `app.py`, no los módulos del núcleo: si la app queda corriendo,
+> la UI nueva puede usar una configuración vieja y mostrar errores como
+> "Parámetro desconocido".
+
 ## Parámetros principales
 
 | Parámetro | Valores | Notas |
