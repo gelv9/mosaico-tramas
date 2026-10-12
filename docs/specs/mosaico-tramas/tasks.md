@@ -34,7 +34,7 @@
   - Cubre: RF2.4 (a–e), RF2.5 y RF2.7.
   - Test: `test_seleccion.py` (**CA1, CA9**). Para N = 5…10: cobertura estrictamente creciente, Δ ≥ 6 pp entre los niveles 1…N, Δ ≥ 1,5 pp entre el vacío y el nivel 1, nivel 1 = punto, nivel N = lleno, familias distintas y mismo resultado en dos llamadas. Con una biblioteca imposible (inyectada) se lanza `ErrorBibliotecaSimbolos`.
 
-- [ ] **T7 — Hoja de muestra.** `muestra.py`: `hoja_muestra(n | None) -> bytes` (PDF A4).
+- [x] **T7 — Hoja de muestra.** `muestra.py`: `hoja_muestra(n | None) -> bytes` (PDF A4).
   - Cubre: RF2.8.
   - Test: `test_muestra.py`. El PDF es válido (pypdf), mide A4, su texto contiene los ids o números y las coberturas, y la salida es determinista.
 
