@@ -10,6 +10,8 @@ from mosaico_tramas.cuantizacion import (
     cortes_kmeans,
     cortes_quantiles,
     cortes_uniformes,
+    limitar_oscuros,
+    reducir_ruido,
 )
 from mosaico_tramas.imagen import a_grilla, cargar_luminancia
 
@@ -129,3 +131,88 @@ def test_kmeans_con_menos_valores_que_clusters_no_falla():
 
 def test_uniforme():
     assert np.allclose(cortes_uniformes(5), [1 / 6, 2 / 6, 3 / 6, 4 / 6, 5 / 6])
+
+
+# --- T12: límite de oscuros (post-paso) ---
+
+
+def test_limitar_oscuros_respeta_el_limite(png_foto: bytes):
+    d = _oscuridad(png_foto)
+    n = 5
+    niveles = aplicar_cortes(d, cortes_uniformes(n))
+    limitados = limitar_oscuros(niveles, d, n, 3.0)
+    assert (limitados == n).sum() <= int(0.03 * d.size)
+
+
+def test_limitar_oscuros_baja_las_menos_oscuras_a_n_menos_1():
+    d = np.array([[0.90, 0.95, 0.99, 0.97]], dtype=np.float32)
+    niveles = np.array([[5, 5, 5, 5]], dtype=np.uint8)
+    # 50 % de 4 celdas = 2: se quedan en 5 las dos más oscuras (0,99 y 0,97)
+    resultado = limitar_oscuros(niveles, d, 5, 50.0)
+    assert resultado.tolist() == [[4, 4, 5, 5]]
+
+
+def test_limitar_oscuros_desempate_estable():
+    d = np.full((1, 4), 0.9, dtype=np.float32)
+    niveles = np.full((1, 4), 5, dtype=np.uint8)
+    # Con oscuridades iguales, se quedan las primeras en orden de lectura
+    assert limitar_oscuros(niveles, d, 5, 50.0).tolist() == [[5, 5, 4, 4]]
+
+
+def test_limitar_oscuros_no_toca_si_no_excede():
+    d = np.array([[0.1, 0.9]], dtype=np.float32)
+    niveles = np.array([[0, 5]], dtype=np.uint8)
+    assert np.array_equal(limitar_oscuros(niveles, d, 5, 50.0), niveles)
+
+
+# --- T13: reducción de ruido ---
+
+
+def _componentes_de_tamano_1(niveles: npt.NDArray[np.uint8]) -> int:
+    from skimage.measure import label
+
+    total = 0
+    for v in np.unique(niveles):
+        etiquetas = label(niveles == v, connectivity=2)
+        total += int((np.bincount(etiquetas.ravel())[1:] == 1).sum())
+    return total
+
+
+def test_ca11_sin_celdas_sueltas(png_foto: bytes):
+    d = _oscuridad(png_foto)
+    niveles = aplicar_cortes(d, cortes_quantiles(d, 7))
+    assert _componentes_de_tamano_1(niveles) > 0  # la foto con ruido sí tiene sueltas
+    limpio = reducir_ruido(niveles, umbral=2)
+    assert _componentes_de_tamano_1(limpio) == 0
+
+
+def test_celda_suelta_toma_el_nivel_de_sus_vecinas():
+    niveles = np.full((5, 5), 2, dtype=np.uint8)
+    niveles[2, 2] = 6
+    assert np.all(reducir_ruido(niveles, umbral=2) == 2)
+
+
+def test_empate_entre_vecinas_gana_el_mas_cercano():
+    # Celda de nivel 3 rodeada por 4 vecinas de nivel 1 y 4 de nivel 4: gana 4 (más cercano)
+    niveles = np.array([[1, 4, 1], [4, 3, 4], [1, 4, 1]], dtype=np.uint8)
+    resultado = reducir_ruido(niveles, umbral=2)
+    assert resultado[1, 1] == 4
+
+
+def test_bloques_grandes_no_se_tocan():
+    niveles = np.zeros((10, 10), dtype=np.uint8)
+    niveles[:, 5:] = 3
+    assert np.array_equal(reducir_ruido(niveles, umbral=5), niveles)
+
+
+def test_umbral_mayor_elimina_componentes_mas_grandes():
+    niveles = np.zeros((8, 8), dtype=np.uint8)
+    niveles[3:5, 3:5] = 4  # componente de 4 celdas
+    assert np.array_equal(reducir_ruido(niveles, umbral=4), niveles)
+    assert np.all(reducir_ruido(niveles, umbral=5) == 0)
+
+
+def test_reduccion_de_ruido_determinista(png_foto: bytes):
+    d = _oscuridad(png_foto)
+    niveles = aplicar_cortes(d, cortes_quantiles(d, 6))
+    assert np.array_equal(reducir_ruido(niveles, 3), reducir_ruido(niveles, 3))

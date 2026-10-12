@@ -60,11 +60,11 @@
   - Cubre: RF3.1 y RNF2.
   - Test: k-means da el mismo resultado en dos corridas, converge en un caso de 3 clusters obvios y no deja clusters vacíos. `uniform` usa los cortes k/(N+1).
 
-- [ ] **T12 — Límite de oscuros (post-paso).** `limitar_oscuros(niveles, d, N, pct)`.
+- [x] **T12 — Límite de oscuros (post-paso).** `limitar_oscuros(niveles, d, N, pct)`.
   - Cubre: RF3.5.
   - Test (**CA10**, primera parte): después del post-paso, el nivel N queda ≤ L %; las celdas degradadas son las menos oscuras y van a N−1; el orden de desempate es estable.
 
-- [ ] **T13 — Reducción de ruido.** `reducir_ruido(niveles, umbral)`: componentes con conectividad 8, moda de los vecinos, desempates, hasta 3 pasadas.
+- [x] **T13 — Reducción de ruido.** `reducir_ruido(niveles, umbral)`: componentes con conectividad 8, moda de los vecinos, desempates, hasta 3 pasadas.
   - Cubre: RF3.4.
   - Test (**CA11**): con umbral 2 no queda ningún componente de tamaño 1. Un bloque grande no se toca. Los desempates siguen el diseño y el resultado es determinista.
 

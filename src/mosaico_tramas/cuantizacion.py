@@ -110,3 +110,60 @@ def cortes_kmeans(d: Matriz, n: int, max_iter: int = 100, tolerancia: float = 1e
         if cortes[i] <= cortes[i - 1]:
             cortes[i] = np.nextafter(cortes[i - 1], np.inf)
     return cortes
+
+
+def limitar_oscuros(niveles: Niveles, d: Matriz, n: int, max_pct: float) -> Niveles:
+    """Deja como máximo max_pct % de celdas en el nivel N; el exceso pasa a N−1 (RF3.5).
+
+    Se conservan las más oscuras; a igual oscuridad, las primeras en orden de lectura.
+    """
+    maximo = int(np.floor(max_pct / 100.0 * niveles.size))
+    plano = niveles.ravel()
+    indices = np.flatnonzero(plano == n)
+    if len(indices) <= maximo:
+        return niveles
+    orden = np.lexsort((indices, -d.ravel()[indices]))  # oscuridad desc, índice asc
+    resultado = plano.copy()
+    resultado[indices[orden[maximo:]]] = n - 1
+    return resultado.reshape(niveles.shape)
+
+
+def reducir_ruido(niveles: Niveles, umbral: int, max_pasadas: int = 3) -> Niveles:
+    """Reasigna componentes (vecindad de 8) de menos de `umbral` celdas (RF3.4, design §6.5).
+
+    El nuevo nivel es la moda de las celdas vecinas; empate → el más cercano al original;
+    empate → el menor. Los cambios de cada pasada se aplican juntos (resultado determinista).
+    """
+    from scipy import ndimage
+    from skimage.measure import label
+
+    estructura = np.ones((3, 3), dtype=bool)
+    actual = niveles.copy()
+    alto, ancho = actual.shape
+    for _ in range(max_pasadas):
+        cambios: list[tuple[npt.NDArray[np.bool_], tuple[slice, slice], int]] = []
+        for v in np.unique(actual):
+            etiquetas = label(actual == v, connectivity=2)
+            tamanos = np.bincount(etiquetas.ravel())
+            for etiqueta, caja in enumerate(ndimage.find_objects(etiquetas), start=1):
+                if caja is None or tamanos[etiqueta] >= umbral:
+                    continue
+                # Caja ampliada en 1 celda para ver las vecinas
+                filas = slice(max(caja[0].start - 1, 0), min(caja[0].stop + 1, alto))
+                cols = slice(max(caja[1].start - 1, 0), min(caja[1].stop + 1, ancho))
+                componente = etiquetas[filas, cols] == etiqueta
+                vecinas = ndimage.binary_dilation(componente, estructura) & ~componente
+                valores = actual[filas, cols][vecinas]
+                if valores.size == 0:
+                    continue
+                conteos = np.bincount(valores, minlength=int(actual.max()) + 1)
+                candidatos = np.flatnonzero(conteos == conteos.max())
+                nuevo = int(min(candidatos, key=lambda c: (abs(int(c) - int(v)), int(c))))
+                cambios.append((componente, (filas, cols), nuevo))
+        if not cambios:
+            break
+        siguiente = actual.copy()
+        for componente, (filas, cols), nuevo in cambios:
+            siguiente[filas, cols][componente] = nuevo
+        actual = siguiente
+    return actual
