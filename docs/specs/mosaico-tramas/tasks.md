@@ -118,11 +118,11 @@
   - Cubre: RF5.6.
   - Test: las dimensiones son correctas y la salida es determinista byte a byte. Una celda de nivel N es negra y una de nivel 0 blanca en la solución.
 
-- [ ] **T24 — Pipeline.** `generar_mosaico`, `generar_preview`, `empaquetar_zip` y la nomenclatura de archivos.
+- [x] **T24 — Pipeline.** `generar_mosaico`, `generar_preview`, `empaquetar_zip` y la nomenclatura de archivos.
   - Cubre: RF5.7, RF5.8 y RNF3.
   - Test (**CA8, CA12**): dos corridas dan PDF, PNG y ZIP idénticos (con quantiles y con kmeans). En un subproceso, importar y ejecutar `pipeline` no deja a `streamlit` en `sys.modules`. Los nombres siguen RF5.8.
 
-- [ ] **T25 — Rendimiento.** Marker `slow` en pyproject.
+- [x] **T25 — Rendimiento.** Marker `slow` en pyproject.
   - Cubre: RNF1.
   - Test (**CA13**): 100 × 140 en un papel CUSTOM de 430 × 600 mm (preprocesamiento + cuantización + PDF) tarda < 5 s.
 
