@@ -63,7 +63,14 @@ def nuevo_canvas(buffer: io.BytesIO, tamano_pt: tuple[float, float]) -> Canvas:
 
 
 def dibujar_simbolo(
-    canvas: Canvas, simbolo: Simbolo, x: float, y_sup: float, lado: float, *, recortar: bool = True
+    canvas: Canvas,
+    simbolo: Simbolo,
+    x: float,
+    y_sup: float,
+    lado: float,
+    *,
+    recortar: bool = True,
+    trazo_rel: float = TRAZO_REL,
 ) -> None:
     """Dibuja un símbolo en negro en la celda cuya esquina superior izquierda es (x, y_sup)."""
     canvas.saveState()
@@ -73,7 +80,7 @@ def dibujar_simbolo(
         canvas.clipPath(borde, stroke=0, fill=0)
     canvas.setFillGray(0)
     canvas.setStrokeGray(0)
-    canvas.setLineWidth(TRAZO_REL * lado)
+    canvas.setLineWidth(trazo_rel * lado)
     canvas.setLineCap(0)  # extremos planos (butt), igual que en el rasterizado
 
     def punto(u: float, v: float) -> tuple[float, float]:
@@ -95,11 +102,13 @@ def dibujar_simbolo(
     canvas.restoreState()
 
 
-def _definir_forms(canvas: Canvas, simbolos: tuple[Simbolo, ...], celda: float) -> None:
+def _definir_forms(
+    canvas: Canvas, simbolos: tuple[Simbolo, ...], celda: float, trazo_rel: float
+) -> None:
     """Un Form XObject por símbolo (del tamaño de la celda) y los puntos de grilla."""
     for simbolo in simbolos:
         canvas.beginForm(nombre_form(simbolo), lowerx=0, lowery=0, upperx=celda, uppery=celda)
-        dibujar_simbolo(canvas, simbolo, 0, celda, celda, recortar=False)
+        dibujar_simbolo(canvas, simbolo, 0, celda, celda, recortar=False, trazo_rel=trazo_rel)
         canvas.endForm()
     # Puntos de la grilla (RF7.2a), centrados en el origen del form
     r = RADIO_PUNTO_GRILLA
@@ -228,7 +237,9 @@ def _leyenda(
         x_ampliado = x_real + real + mm_a_pt(2)
         for x_caja, lado in ((x_real, real), (x_ampliado, ampliado)):
             y_sup = centro_y + lado / 2
-            dibujar_simbolo(canvas, simbolo, x_caja, y_sup, lado)
+            dibujar_simbolo(
+                canvas, simbolo, x_caja, y_sup, lado, trazo_rel=trazo_relativo(layout, config)
+            )
             _caja(canvas, x_caja, y_sup - lado, lado, config.estilo_grilla)
     canvas.restoreState()
 
@@ -244,6 +255,11 @@ def _caja(canvas: Canvas, x: float, y: float, lado: float, estilo: EstiloGrilla)
         canvas.setLineWidth(ANCHO_LINEA_GRILLA)
         canvas.rect(x, y, lado, lado, stroke=1, fill=0)
     canvas.restoreState()
+
+
+def trazo_relativo(layout: Layout, config: MosaicoConfig) -> float:
+    """Grosor de la microfibra relativo al lado de la celda de este papel (RF5.0)."""
+    return mm_a_pt(config.grosor_trazo_mm) / layout.celda_pt
 
 
 def rect_leyenda_aparte(layout: Layout, config: MosaicoConfig) -> Rect:
@@ -262,7 +278,7 @@ def generar_pdf(
     """PDF: plantilla (+ leyenda si entra) → leyenda aparte → solución (RF7.5)."""
     buffer = io.BytesIO()
     canvas = nuevo_canvas(buffer, layout.pagina_pt)
-    _definir_forms(canvas, simbolos, layout.celda_pt)
+    _definir_forms(canvas, simbolos, layout.celda_pt, trazo_relativo(layout, config))
 
     _pagina_plantilla(canvas, niveles, layout, config)
     if layout.leyenda_en_plantilla and layout.rect_leyenda is not None:

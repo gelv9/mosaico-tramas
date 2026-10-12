@@ -167,7 +167,7 @@
 
 ## Bloque G — Celda y trazo configurables (pruebas impresas)
 
-- [ ] **T32 — Celda mínima y grosor de trazo configurables.** `celda_min_mm` (3–4, por defecto 3,5) en la config, el layout, las sugerencias y los mensajes; `grosor_trazo_mm` (0,1–1, por defecto 0,5) en la solución, la leyenda y el PNG; los dos controles en la UI.
+- [x] **T32 — Celda mínima y grosor de trazo configurables.** `celda_min_mm` (3–4, por defecto 3,5) en la config, el layout, las sugerencias y los mensajes; `grosor_trazo_mm` (0,1–1, por defecto 0,5) en la solución, la leyenda y el PNG; los dos controles en la UI.
   - Cubre: RF4.6 y RF5.0.
   - Test (**CA7, CA17**): con 3, 3,5 y 4 mm el límite y las sugerencias se respetan; valores fuera de rango dan error en español; el ancho de línea de la solución coincide con el grosor y una preview con 0,2 mm es más clara que con 0,5 mm.
 

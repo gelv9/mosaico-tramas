@@ -11,7 +11,7 @@ import numpy as np
 import numpy.typing as npt
 from PIL import Image, ImageDraw, ImageFont
 
-from mosaico_tramas.simbolos.primitivas import Simbolo
+from mosaico_tramas.simbolos.primitivas import TRAZO_REL, Simbolo
 from mosaico_tramas.simbolos.raster import rasterizar
 
 TILE_MIN_PX = 4
@@ -41,11 +41,14 @@ def _a_png(pixeles: Imagen) -> bytes:
 
 
 def png_solucion(
-    niveles: npt.NDArray[np.uint8], simbolos: tuple[Simbolo, ...], lado_px: int
+    niveles: npt.NDArray[np.uint8],
+    simbolos: tuple[Simbolo, ...],
+    lado_px: int,
+    trazo_rel: float = TRAZO_REL,
 ) -> bytes:
     """Resultado terminado: símbolos en negro sobre blanco."""
     t = tamano_tile(niveles.shape[1], niveles.shape[0], lado_px)
-    tinta = [np.zeros((t, t), np.float32)] + [rasterizar(s, t) for s in simbolos]
+    tinta = [np.zeros((t, t), np.float32)] + [rasterizar(s, t, trazo_rel) for s in simbolos]
     tiles = np.round((1.0 - np.stack(tinta)) * 255).astype(np.uint8)
     return _a_png(_componer(tiles, niveles))
 

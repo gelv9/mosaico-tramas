@@ -175,3 +175,24 @@ def test_estilo_de_grilla():
 def test_ya_no_existe_la_marca_de_vacio():
     with pytest.raises(ConfigInvalidaError, match="Parámetro desconocido: 'marca_blanco'"):
         MosaicoConfig.crear(marca_blanco=True)
+
+
+# --- T32: celda mínima y grosor de trazo ---
+
+
+def test_celda_minima_y_trazo_por_defecto():
+    config = MosaicoConfig.crear()
+    assert config.celda_min_mm == 3.5
+    assert config.grosor_trazo_mm == 0.5
+
+
+@pytest.mark.parametrize("valor", [2.9, 4.1, 0, "x"])
+def test_celda_minima_fuera_de_rango(valor: object):
+    with pytest.raises(ConfigInvalidaError, match="celda mínima debe estar entre 3 y 4 mm"):
+        MosaicoConfig.crear(celda_min_mm=valor)
+
+
+@pytest.mark.parametrize("valor", [0.05, 1.5])
+def test_grosor_de_trazo_fuera_de_rango(valor: float):
+    with pytest.raises(ConfigInvalidaError, match="grosor del trazo debe estar entre 0.1 y 1 mm"):
+        MosaicoConfig.crear(grosor_trazo_mm=valor)

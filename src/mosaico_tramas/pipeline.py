@@ -88,7 +88,9 @@ def generar_mosaico(
         }
 
     lado = lado_png or config.png_lado_px
-    solucion = png_solucion(cuantizacion.niveles, simbolos, lado) if con_png else b""
+    # La preview usa el grosor real de la microfibra respecto de la celda del primer papel
+    trazo_rel = config.grosor_trazo_mm / primero.celda_mm
+    solucion = png_solucion(cuantizacion.niveles, simbolos, lado, trazo_rel) if con_png else b""
     plantilla = png_plantilla(cuantizacion.niveles, lado, config.estilo_grilla) if con_png else b""
 
     return Resultado(

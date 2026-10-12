@@ -27,7 +27,6 @@ SEPARACION_LEYENDA_MM = 6
 ALTO_INSTRUCCION_MM = 4.6
 LADO_AMPLIADO_MM = 10
 
-CELDA_MIN_MM = 4.0
 _EPS = 1e-9
 
 type Rect = tuple[float, float, float, float]  # (x0, y0, x1, y1) en pt, origen abajo
@@ -116,7 +115,7 @@ def calcular_layout(
     """Resuelve celda, filas y ubicación de la leyenda; error si la celda queda < 4 mm."""
     orientacion, ancho, alto, margen, uw, uh = _geometria_util(config, ancho_img, alto_img, papel)
     cols = config.columnas
-    minimo = mm_a_pt(CELDA_MIN_MM)
+    minimo = mm_a_pt(config.celda_min_mm)
     debajo = config.leyenda is UbicacionLeyenda.BELOW
     alto_ley = alto_leyenda(config.n_simbolos, uw)
 
@@ -140,7 +139,7 @@ def calcular_layout(
                 Aviso(
                     CodigoAviso.LEYENDA_MOVIDA,
                     "La leyenda no entra debajo sin achicar las celdas por debajo de "
-                    f"{CELDA_MIN_MM:g} mm; se movió a una hoja aparte.",
+                    f"{_mm(config.celda_min_mm)} mm; se movió a una hoja aparte.",
                 ),
             )
             if config.recorte is Recorte.CENTER and filas_fijas is None:
@@ -197,7 +196,7 @@ def columnas_maximas(
     papeles: list[Papel],
 ) -> int | None:
     """Mayor cantidad de columnas (≥ 10, < las pedidas) que da ≥ 4 mm en todos los papeles."""
-    minimo = mm_a_pt(CELDA_MIN_MM)
+    minimo = mm_a_pt(config.celda_min_mm)
     for cols in range(config.columnas - 1, 9, -1):
         prueba = config.model_copy(update={"columnas": cols})
         if all(_celda_completa(prueba, ancho_img, alto_img, p) >= minimo - _EPS for p in papeles):
@@ -207,7 +206,7 @@ def columnas_maximas(
 
 def papel_minimo(config: MosaicoConfig, ancho_img: int, alto_img: int) -> str | None:
     """Papel del registro de menor área que admite las columnas pedidas."""
-    minimo = mm_a_pt(CELDA_MIN_MM)
+    minimo = mm_a_pt(config.celda_min_mm)
     por_area = sorted(REGISTRO_PAPELES.values(), key=lambda p: (p.ancho_mm * p.alto_mm, p.nombre))
     for papel in por_area:
         if _celda_completa(config, ancho_img, alto_img, papel) >= minimo - _EPS:
@@ -220,13 +219,13 @@ def personalizado_minimo(
 ) -> tuple[int, int] | None:
     """Papel personalizado mínimo (mm) para las columnas y filas actuales, con la leyenda."""
     margen = config.margen_mm
-    ancho = math.ceil(config.columnas * CELDA_MIN_MM + 2 * margen)
+    ancho = math.ceil(config.columnas * config.celda_min_mm + 2 * margen)
     alto_ley_mm = 0.0
     if config.leyenda is UbicacionLeyenda.BELOW:
         # La leyenda se mide con el ancho útil del papel sugerido (más angosto o más ancho)
         ancho_util_sugerido = mm_a_pt(ancho - 2 * margen)
         alto_ley_mm = alto_leyenda(config.n_simbolos, ancho_util_sugerido) / mm_a_pt(1)
-    alto = math.ceil(filas * CELDA_MIN_MM + 2 * margen + alto_ley_mm)
+    alto = math.ceil(filas * config.celda_min_mm + 2 * margen + alto_ley_mm)
     if max(ancho, alto) > PERSONALIZADO_MAX_MM or min(ancho, alto) < PERSONALIZADO_MIN_MM:
         return None
     return ancho, alto
@@ -250,7 +249,14 @@ def _error_celda_chica(
     custom = personalizado_minimo(config, filas, ancho_util)
     return CeldaDemasiadoChicaError(
         mensaje_celda_chica(
-            config.columnas, papel.nombre, orientacion, celda_pt, cols_max, sugerido, custom
+            config.celda_min_mm,
+            config.columnas,
+            papel.nombre,
+            orientacion,
+            celda_pt,
+            cols_max,
+            sugerido,
+            custom,
         ),
         columnas_max=cols_max,
         papel_sugerido=sugerido,
@@ -258,7 +264,13 @@ def _error_celda_chica(
     )
 
 
+def _mm(valor: float) -> str:
+    """Medida en mm con coma decimal y sin ceros sobrantes (3,5 / 4)."""
+    return f"{valor:g}".replace(".", ",")
+
+
 def mensaje_celda_chica(
+    minimo_mm: float,
     cols: int,
     papel: str,
     orientacion: Orientacion,
@@ -278,7 +290,7 @@ def mensaje_celda_chica(
         opciones.append(f"un papel personalizado de {custom[0]} × {custom[1]} mm")
     texto = (
         f"Con {cols} columnas en {papel} {_ORIENTACION_ES[orientacion]} las celdas miden "
-        f"{celda_mm} mm (mínimo {CELDA_MIN_MM:g} mm), demasiado chicas para dibujar."
+        f"{celda_mm} mm (mínimo {_mm(minimo_mm)} mm), demasiado chicas para dibujar."
     )
     if opciones:
         cuerpo = ", ".join(opciones[:-1]) + (" o " if len(opciones) > 1 else "") + opciones[-1]
@@ -327,6 +339,7 @@ def _error_multi_papel(
     celda = _celda_completa(config, ancho_img, alto_img, papel, filas)
     cols_max = columnas_maximas(config, ancho_img, alto_img, papeles)
     mensaje = f"Falla el papel {papel.nombre}. " + mensaje_celda_chica(
+        config.celda_min_mm,
         config.columnas,
         papel.nombre,
         orientacion,

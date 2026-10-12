@@ -92,7 +92,9 @@ def test_avisos_combinados(png_plana: bytes):
 
 def test_aviso_de_leyenda_movida_nombra_el_papel():
     imagen = a_png(generar_foto_sintetica(1000, 1450))
-    config = MosaicoConfig.crear(columnas=45, papeles=["A4", "LETTER"], leyenda="below")
+    config = MosaicoConfig.crear(
+        columnas=45, papeles=["A4", "LETTER"], leyenda="below", celda_min_mm=4.0
+    )
     with pytest.raises(CeldaDemasiadoChicaError):
         generar_mosaico(imagen, config)  # en Letter no entra: error, no PDF a medias
     resultado = generar_mosaico(
@@ -102,7 +104,7 @@ def test_aviso_de_leyenda_movida_nombra_el_papel():
 
 
 def test_celda_chica_no_genera_nada(png_foto: bytes):
-    with pytest.raises(CeldaDemasiadoChicaError, match="4 mm"):
+    with pytest.raises(CeldaDemasiadoChicaError, match="mínimo 3,5 mm"):
         generar_mosaico(png_foto, MosaicoConfig.crear(columnas=80))
 
 

@@ -77,3 +77,13 @@ def test_plantilla_con_puntos_es_distinta_y_determinista():
     # A mitad de un borde de celda no hay línea, en la esquina sí hay punto
     assert img[0, t // 2] == 255
     assert img[0, 0] < 255
+
+
+# --- T32: grosor de trazo (CA17) ---
+
+
+def test_ca17_trazo_fino_da_preview_mas_clara():
+    niveles = _niveles()
+    fino = _abrir(png_solucion(niveles, SIMBOLOS, 1200, trazo_rel=0.2 / 4))
+    grueso = _abrir(png_solucion(niveles, SIMBOLOS, 1200, trazo_rel=0.5 / 4))
+    assert fino.mean() > grueso.mean() + 5

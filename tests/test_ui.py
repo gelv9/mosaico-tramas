@@ -52,6 +52,8 @@ def test_tiene_todos_los_controles(app: AppTest):
         "leyenda",
         "incluir_solucion",
         "estilo_grilla",
+        "celda_min_mm",
+        "grosor_trazo_mm",
     }
     for clave in claves:
         assert clave in app.session_state, clave
@@ -74,7 +76,7 @@ def test_no_hay_controles_de_cantidad_ni_triangulo(app_con_imagen: AppTest):
 def test_celda_chica_muestra_error_en_espanol(app_con_imagen: AppTest):
     app_con_imagen.run()
     app_con_imagen.number_input(key="columnas").set_value(80).run()
-    assert "4 mm" in _textos(app_con_imagen.error)
+    assert "mínimo 3,5 mm" in _textos(app_con_imagen.error)
     assert len(app_con_imagen.tabs) == 0
 
 

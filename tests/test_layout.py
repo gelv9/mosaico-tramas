@@ -50,6 +50,8 @@ CELDA_MIN = mm_a_pt(4)
 
 
 def _config(**valores: object) -> MosaicoConfig:
+    # Los casos históricos de este archivo se calcularon con la celda mínima de 4 mm
+    valores.setdefault("celda_min_mm", 4.0)
     return MosaicoConfig.crear(**valores)
 
 
@@ -232,3 +234,35 @@ def test_multi_papel_custom():
     config = _config(columnas=40, papeles=["A4", "CUSTOM"], papel_personalizado=(300, 400))
     layouts = calcular_layouts(config, 1000, 1000)
     assert layouts["CUSTOM"].papel.ancho_mm == 300
+
+
+# --- T32: celda mínima configurable ---
+
+
+@pytest.mark.parametrize("minimo", [3.0, 3.5, 4.0])
+def test_celda_minima_configurable_y_sugerencias(minimo: float):
+    config = _config(columnas=60, celda_min_mm=minimo)
+    celda_60 = mm_a_pt(184.6) / 60  # ≈ 3,08 mm en A4 vertical
+    if celda_60 >= mm_a_pt(minimo):
+        layout = calcular_layout(config, 1000, 1000, REGISTRO_PAPELES["A4"])
+        assert layout.celda_pt >= mm_a_pt(minimo) - 1e-6
+        return
+    with pytest.raises(CeldaDemasiadoChicaError) as info:
+        calcular_layout(config, 1000, 1000, REGISTRO_PAPELES["A4"])
+    error = info.value
+    texto_minimo = f"{minimo:g}".replace(".", ",")
+    assert f"mínimo {texto_minimo} mm" in str(error)
+    sugerida = _config(columnas=error.columnas_max, celda_min_mm=minimo)
+    layout = calcular_layout(sugerida, 1000, 1000, REGISTRO_PAPELES["A4"])
+    assert layout.celda_pt >= mm_a_pt(minimo) - 1e-6
+    custom = papel_personalizado(*error.personalizado_mm)
+    assert calcular_layout(config, 1000, 1000, custom).celda_pt >= mm_a_pt(minimo) - 1e-6
+
+
+def test_con_3_mm_entran_mas_columnas():
+    with pytest.raises(CeldaDemasiadoChicaError) as a4mm:
+        calcular_layout(_config(columnas=70, celda_min_mm=4.0), 1000, 1000, REGISTRO_PAPELES["A4"])
+    with pytest.raises(CeldaDemasiadoChicaError) as a3mm:
+        calcular_layout(_config(columnas=70, celda_min_mm=3.0), 1000, 1000, REGISTRO_PAPELES["A4"])
+    assert a4mm.value.columnas_max == 46
+    assert a3mm.value.columnas_max == 61

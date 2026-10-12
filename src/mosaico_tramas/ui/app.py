@@ -104,6 +104,24 @@ def _controles(settings: Settings) -> dict[str, object]:
         horizontal=True,
     )
     margen = barra.number_input("Márgenes (mm)", 5.0, 40.0, 12.7, step=0.5, key="margen_mm")
+    celda_min = barra.number_input(
+        "Celda mínima (mm)",
+        3.0,
+        4.0,
+        3.5,
+        step=0.1,
+        key="celda_min_mm",
+        help="Por debajo de este tamaño no se genera la plantilla.",
+    )
+    grosor = barra.number_input(
+        "Grosor de la microfibra (mm)",
+        0.1,
+        1.0,
+        0.5,
+        step=0.05,
+        key="grosor_trazo_mm",
+        help="La solución y la preview dibujan con este grosor, como el útil del comprador.",
+    )
     rellenar = barra.checkbox(
         "Rellenar la hoja (recortar al centro)",
         value=False,
@@ -136,6 +154,8 @@ def _controles(settings: Settings) -> dict[str, object]:
         "papel_personalizado": personalizado,
         "orientacion": orientacion,
         "margen_mm": float(margen),
+        "celda_min_mm": round(float(celda_min), 2),
+        "grosor_trazo_mm": round(float(grosor), 2),
         "recorte": "center" if rellenar else "fit",
         "leyenda": leyenda,
         "incluir_solucion": solucion,

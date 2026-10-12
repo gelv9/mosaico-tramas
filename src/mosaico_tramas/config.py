@@ -102,6 +102,8 @@ class MosaicoConfig(BaseModel):
     papel_personalizado: PapelPersonalizado | None = None
     orientacion: Orientacion = Orientacion.AUTO
     margen_mm: float = 12.7
+    celda_min_mm: float = 3.5  # RF4.6: límite duro configurable entre 3 y 4 mm
+    grosor_trazo_mm: float = 0.5  # RF5.0: microfibra del comprador
     recorte: Recorte = Recorte.FIT
     leyenda: UbicacionLeyenda = UbicacionLeyenda.BELOW
     incluir_solucion: bool = True
@@ -150,6 +152,16 @@ class MosaicoConfig(BaseModel):
     @classmethod
     def _v_margen(cls, v: Any) -> float:
         return _numero(v, 5, 40, "Los márgenes deben estar entre 5 y 40 mm")
+
+    @field_validator("celda_min_mm", mode="before")
+    @classmethod
+    def _v_celda_min(cls, v: Any) -> float:
+        return _numero(v, 3, 4, "La celda mínima debe estar entre 3 y 4 mm")
+
+    @field_validator("grosor_trazo_mm", mode="before")
+    @classmethod
+    def _v_grosor(cls, v: Any) -> float:
+        return _numero(v, 0.1, 1, "El grosor del trazo debe estar entre 0.1 y 1 mm")
 
     @field_validator("percentil_bajo", mode="before")
     @classmethod

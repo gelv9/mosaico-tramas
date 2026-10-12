@@ -96,7 +96,9 @@ def test_ca5_leyenda_debajo_en_la_plantilla():
 
 def test_ca5_leyenda_movida_va_en_la_pagina_2():
     # 45 × 65 en A4: con la leyenda debajo la celda bajaría de 4 mm
-    lector, _, layout, _ = _generar(filas=65, cols=45, ancho_img=1000, alto_img=1450)
+    lector, _, layout, _ = _generar(
+        filas=65, cols=45, ancho_img=1000, alto_img=1450, celda_min_mm=4.0
+    )
     assert not layout.leyenda_en_plantilla
     assert len(lector.pages) == 3
     assert INSTRUCCION not in lector.pages[0].extract_text().replace("\n", " ")
@@ -251,3 +253,20 @@ def test_grilla_tenue_de_la_solucion_respeta_el_estilo():
     lector, _, layout, _ = _generar(estilo_grilla="dots", grilla_en_solucion=True)
     formas = Counter(_FORM.findall(_contenido(lector, 1)))
     assert formas[NOMBRE_PUNTO_GRILLA_TENUE] == (layout.columnas + 1) * (layout.filas + 1)
+
+
+# --- T32: grosor de trazo (CA17) ---
+
+
+def _ancho_de_linea_del_form(lector: PdfReader, pagina: int, nombre: str) -> float:
+    xobjetos = lector.pages[pagina]["/Resources"]["/XObject"]
+    datos = xobjetos[f"/FormXob.{nombre}"].get_object().get_data().decode("latin-1")
+    return float(re.search(r"(-?[\d.]+) w", datos).group(1))
+
+
+@pytest.mark.parametrize("grosor", [0.2, 0.5])
+def test_ca17_la_solucion_usa_el_grosor_configurado(grosor: float):
+    lector, _, _, config = _generar(grosor_trazo_mm=grosor)
+    simbolo = simbolos_para(config)[1]  # diagonal /
+    ancho = _ancho_de_linea_del_form(lector, 1, nombre_form(simbolo))
+    assert ancho == pytest.approx(mm_a_pt(grosor), abs=0.01)
