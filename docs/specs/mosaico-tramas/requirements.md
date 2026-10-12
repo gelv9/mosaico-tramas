@@ -74,7 +74,7 @@
 - **RF4.3** — WHERE el recorte es `fit` (ajustar a la página, por defecto), THE SYSTEM SHALL conservar la imagen completa y calcular filas = round(columnas × alto / ancho).
 - **RF4.4** — WHERE el recorte es `center` (recortar al centro), THE SYSTEM SHALL recortar la imagen al centro con la proporción del área disponible para la grilla, para que llene la página, y calcular las filas a partir de esa proporción.
 - **RF4.5** — THE SYSTEM SHALL calcular el lado de la celda como min(ancho disponible / columnas, alto disponible / filas), donde el área disponible ya descuenta la leyenda si va debajo.
-- **RF4.6** — THE SYSTEM SHALL tratar **CELDA_MIN = 4 mm** como un **límite duro**: nunca genera una plantilla con celdas de menos de 4 mm de lado *(decidido, Q1)*.
+- **RF4.6** — THE SYSTEM SHALL tratar la **celda mínima** como un **límite duro**, configurable entre **3 y 4 mm** (por defecto **3,5 mm**): nunca genera una plantilla con celdas más chicas que ese mínimo *(enmienda: el experimento con el perro mostró que con celdas de 3–3,5 mm las formas se leen mucho mejor; el usuario lo va a validar con pruebas impresas)*. *Historia: antes era un mínimo fijo de 4 mm.*
 - **RF4.6a** — IF el lado de la celda calculado queda por debajo de CELDA_MIN, THEN THE SYSTEM SHALL **no generar el PDF** y devolver un error en español con tres sugerencias concretas:
   - (1) la cantidad máxima de columnas que respeta los 4 mm con el papel, la orientación y los márgenes actuales;
   - (2) el papel más chico del registro que admite las columnas pedidas, si existe alguno;
@@ -84,6 +84,7 @@
 
 ### RF5 — Formato de salida de impresión
 
+- **RF5.0** — THE SYSTEM SHALL permitir configurar el **grosor del trazo** del útil del comprador, entre 0,1 y 1 mm (por defecto 0,5 mm). La solución, la leyenda y la preview dibujan las rayas con ese grosor físico, así que el resultado de referencia coincide con lo que se logra con esa microfibra *(enmienda: para comparar microfibras de 0,2 y 0,5 mm)*.
 - **RF5.1** — THE SYSTEM SHALL soportar los papeles A4 (595,28 × 841,89 pt), US Letter (612 × 792 pt), A3 (841,89 × 1190,55 pt) y US Tabloid (792 × 1224 pt), definidos en un **registro extensible**: sumar un papel es sumar una entrada al registro.
 - **RF5.1a** — THE SYSTEM SHALL aceptar un **papel personalizado**, con ancho y alto en mm entre 100 y 1200 *(decidido, Q1)*, para las grillas grandes que no entran en los formatos estándar sin bajar de 4 mm.
 - **RF5.1b** — IF el papel personalizado está fuera de rango, THEN THE SYSTEM SHALL rechazarlo con un mensaje en español que indique el rango válido.
@@ -146,7 +147,7 @@
 | CA4 | Para cada papel (A4, Letter, A3 y Tabloid) y cada orientación, el MediaBox del PDF mide lo indicado en RF5.1 (±0,01 pt), y el contenido (grilla y leyenda) queda dentro del área útil. | RF5.1, RF5.4 |
 | CA5 | Con `below`, si la leyenda entra: 1 página de plantilla con la leyenda incluida. Si no entra (porque con ella la celda baja de 4 mm y sin ella no): la leyenda va en una página aparte y se emite el aviso de RF6.3. | RF6.2, RF6.3 |
 | CA6 | Con `separate`, la leyenda siempre sale en su propia página. | RF6.5 |
-| CA7 | Con una configuración que da celdas < 4 mm, no se genera ningún PDF y se lanza el error en español con las sugerencias de RF4.6a. Las columnas sugeridas, el papel sugerido y el tamaño personalizado sugerido dan efectivamente celdas ≥ 4 mm. | RF4.6, RF4.6a, RF5.7a |
+| CA7 | Con una configuración que da celdas menores que la celda mínima configurada (3–4 mm), no se genera ningún PDF y se lanza el error en español con las sugerencias de RF4.6a; las sugerencias dan celdas ≥ ese mínimo. Un mínimo fuera de 3–4 mm se rechaza en español. | RF4.6, RF4.6a, RF5.7a |
 | CA8 | Dos generaciones con la misma entrada y configuración dan bytes idénticos (PDF y PNG), también con `kmeans`. | RNF2 |
 
 **Criterios adicionales propuestos:**
@@ -159,6 +160,7 @@
 | CA12 | El núcleo se importa y genera sin que `streamlit` esté en `sys.modules`. | RNF3 |
 | CA13 | Una grilla de 100 × 140 en papel personalizado de 430 × 600 mm se genera en < 5 s. Es un test marcado `slow`, porque depende de la máquina. | RNF1 |
 | CA14 | **Todas** las celdas de la plantilla tienen su número; ninguna queda vacía. | RF1.2, RF7.1 |
+| CA17 | El grosor del trazo configurado se respeta en la solución del PDF (ancho de línea = grosor en pt) y oscurece o aclara la preview PNG. | RF5.0 |
 | CA16 | Con el estilo de grilla `puntos`, la plantilla tiene un punto por cada esquina de celda ((cols + 1) × (filas + 1)) y ninguna línea de grilla; con `líneas`, ningún punto de grilla. | RF7.2a |
 | ~~CA15~~ | *Eliminado junto con la marca de vacío.* | — |
 
