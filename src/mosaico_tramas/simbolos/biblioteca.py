@@ -1,6 +1,6 @@
 """Biblioteca del estilo clásico (design.md §4.0, checkpoint D).
 
-Replica la referencia: punto, diagonal /, diagonal \, aspa (X), asterisco de 8 rayos y celda
+Replica la referencia: punto, diagonal /, diagonal invertida, aspa (X), asterisco de 8 rayos y celda
 llena, en ese orden de claro a oscuro. Las dos diagonales comparten tono a propósito.
 
 Convención: coordenadas normalizadas con y hacia abajo. Una diagonal "/" va de la esquina
