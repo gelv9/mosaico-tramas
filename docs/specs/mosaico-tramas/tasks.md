@@ -52,7 +52,7 @@
   - Cubre: soporte para CA3 y CA8.
   - Test: las fixtures son deterministas, porque el hash de los bytes es estable.
 
-- [ ] **T10 — Cuantización por cuantiles.** `cuantizacion.py`: histograma de 4096 bins, cuotas objetivo (con y sin límite de oscuros), cortes estrictamente crecientes y `aplicar_cortes`.
+- [x] **T10 — Cuantización por cuantiles.** `cuantizacion.py`: histograma de 4096 bins, cuotas objetivo (con y sin límite de oscuros), cortes estrictamente crecientes y `aplicar_cortes`.
   - Cubre: RF3.1, RF3.2, RF3.3 y RF3.5 (vía cuotas).
   - Test: `test_cuantizacion.py` (**CA3**). Con el degradado y la foto sintética, para N = 5…7, ningún nivel tiene menos de 0,5·100/(N+1) %. Las celdas idénticas comparten nivel. Con el límite en L %, el nivel N queda ≤ L % y los demás quedan ≈ parejos.
 
