@@ -2,11 +2,24 @@
 
 import pytest
 
+from mosaico_tramas.config import MosaicoConfig
 from mosaico_tramas.errores import ConfigInvalidaError, ErrorBibliotecaSimbolos
-from mosaico_tramas.simbolos.biblioteca import BIBLIOTECA, ID_LLENO, ID_PUNTO, POR_ID, horizontal
+from mosaico_tramas.simbolos.biblioteca import (
+    BIBLIOTECA,
+    ID_LLENO,
+    ID_PUNTO,
+    ID_TRIANGULO,
+    POR_ID,
+    horizontal,
+)
 from mosaico_tramas.simbolos.primitivas import Simbolo
 from mosaico_tramas.simbolos.raster import cobertura
-from mosaico_tramas.simbolos.seleccion import DELTA_MIN, DELTA_MIN_0, elegir_simbolos
+from mosaico_tramas.simbolos.seleccion import (
+    DELTA_MIN,
+    DELTA_MIN_0,
+    elegir_simbolos,
+    simbolos_para,
+)
 
 RANGO_N = range(5, 8)
 
@@ -80,3 +93,22 @@ def test_n_fuera_de_rango(n: int):
 
 def test_biblioteca_por_defecto_es_la_completa():
     assert elegir_simbolos(6) == elegir_simbolos(6, BIBLIOTECA)
+
+
+# --- Triángulo opcional (checkpoint B) ---
+
+
+@pytest.mark.parametrize("n", [5, 6])
+def test_sin_triangulo_lo_excluye_y_cumple_las_reglas(n: int):
+    config = MosaicoConfig.crear(n_simbolos=n, usar_triangulo=False)
+    simbolos = simbolos_para(config)
+    assert ID_TRIANGULO not in [s.id for s in simbolos]
+    coberturas = [cobertura(s) for s in simbolos]
+    assert all(b - a >= DELTA_MIN for a, b in zip(coberturas, coberturas[1:], strict=False))
+    assert len({s.familia for s in simbolos}) == n
+
+
+def test_con_triangulo_usa_la_biblioteca_completa():
+    config = MosaicoConfig.crear(n_simbolos=7)
+    assert simbolos_para(config) == elegir_simbolos(7)
+    assert ID_TRIANGULO in [s.id for s in simbolos_para(config)]

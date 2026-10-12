@@ -63,3 +63,7 @@ BIBLIOTECA: tuple[Simbolo, ...] = (
 POR_ID: dict[str, Simbolo] = {s.id: s for s in BIBLIOTECA}
 ID_PUNTO = "punto"
 ID_LLENO = "lleno"
+ID_TRIANGULO = "triangulo"
+
+# Biblioteca sin el triángulo (opción usar_triangulo = False)
+SIN_TRIANGULO: tuple[Simbolo, ...] = tuple(s for s in BIBLIOTECA if s.id != ID_TRIANGULO)

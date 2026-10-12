@@ -97,7 +97,8 @@ class PapelPersonalizado(BaseModel, frozen=True):
 
 
 class MosaicoConfig(BaseModel, frozen=True):
-    n_simbolos: int = 6  # 5..7 (RF1)
+    n_simbolos: int = 6  # 5..7 (RF1); 5..6 si usar_triangulo = False (RF1.4)
+    usar_triangulo: bool = True            # RF1.4 (checkpoint B)
     columnas: int = 40  # 10..200 (RF4.1)
     metodo: MetodoCuantizacion = QUANTILES
     reduccion_ruido: bool = True
@@ -185,6 +186,13 @@ elegir la mejor clave; si no hay ninguna → ErrorBibliotecaSimbolos (RF2.7)
 | 5 | 15,0 | punto 2 · diag1 17 · aspa1 32 · triangulo 50 · lleno 100 |
 | 6 | 8,8 | punto 2 · horiz1 13 · cruz 24 · aspa1 32 · triangulo 50 · lleno 100 |
 | 7 | 8,1 | punto 2 · horiz1 13 · cruz 24 · aspa1 32 · estrella 42 · triangulo 50 · lleno 100 |
+
+Sin triángulo (`usar_triangulo = False`, función `simbolos_para(config)`):
+
+| N | niveles 1…N |
+|---|---|
+| 5 | punto · vert1 · cruz · estrella · lleno |
+| 6 | punto · horiz1 · cruz · aspa1 · estrella · lleno |
 
 ## 5. Preprocesamiento (`imagen.py`)
 

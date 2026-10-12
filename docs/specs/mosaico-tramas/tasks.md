@@ -72,6 +72,10 @@
   - Cubre: RF3.6, RF3.7 y RF3.8.
   - Test (**CA10**, segunda parte): con ruido y límite activos, el límite se sigue cumpliendo al final. Los conteos suman el total, y el aviso aparece en una imagen con un fondo plano enorme y no aparece en el degradado. No se avisa por el nivel N cuando fue recortado a propósito.
 
+- [x] **T14b — Triángulo opcional** *(decidido en el checkpoint B)*. `usar_triangulo` en la config, `SIN_TRIANGULO` en la biblioteca y `simbolos_para(config)`.
+  - Cubre: RF1.4.
+  - Test: sin triángulo y con N = 7 da error en español. Para N = 5 y 6, no hay triángulo y se cumplen los saltos y las familias.
+
 > 🛑 **Checkpoint B.** Muestro las previews raster (con un render PNG mínimo) y los histogramas para quantiles, kmeans y uniform sobre la foto sintética, en una comparación lado a lado.
 
 ---

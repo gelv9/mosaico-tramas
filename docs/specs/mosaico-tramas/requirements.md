@@ -39,6 +39,7 @@
 - **RF1.1** — THE SYSTEM SHALL permitir elegir N con **N_MIN = 5** y **N_MAX = 7** *(decidido en el checkpoint A: con los símbolos fáciles de RF2.6 y la fibra de 0,5 mm, 7 es el máximo que respeta saltos de 6 pp y familias distintas)*.
 - **RF1.2** — THE SYSTEM SHALL generar N + 1 niveles: la celda vacía más N símbolos. La celda vacía no se cuenta dentro de N.
 - **RF1.3** — IF N < 5 o N > 7, o N no es un entero, THEN THE SYSTEM SHALL rechazar la configuración con el mensaje en español *"La cantidad de símbolos debe ser un entero entre 5 y 7 (valor recibido: X)."*
+- **RF1.4** — WHERE la opción `usar_triangulo` está desactivada (está activada por defecto), THE SYSTEM SHALL excluir el triángulo de la biblioteca y limitar N a 5…6. Si se pide N = 7, el sistema rechaza la configuración con el mensaje en español *"Sin el triángulo, la cantidad de símbolos debe ser un entero entre 5 y 6 (valor recibido: 7)."* *(decidido en el checkpoint B: en fotos reales, el triángulo repetido arma un serrucho en las zonas oscuras grandes, así que es una elección estética del usuario)*.
 
 ### RF2 — Biblioteca de símbolos distinguibles
 

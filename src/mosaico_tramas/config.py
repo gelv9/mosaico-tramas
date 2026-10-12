@@ -20,6 +20,8 @@ from mosaico_tramas.papel import (
 
 N_MIN = 5
 N_MAX = 7
+# Sin el triángulo no entran más de 6 niveles con saltos >= 6 pp (checkpoint B)
+N_MAX_SIN_TRIANGULO = 6
 
 
 class MetodoCuantizacion(StrEnum):
@@ -85,6 +87,7 @@ class MosaicoConfig(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     n_simbolos: int = 6
+    usar_triangulo: bool = True
     columnas: int = 40
     metodo: MetodoCuantizacion = MetodoCuantizacion.QUANTILES
     reduccion_ruido: bool = True
@@ -212,6 +215,11 @@ class MosaicoConfig(BaseModel):
 
     @model_validator(mode="after")
     def _v_cruzadas(self) -> Self:
+        if not self.usar_triangulo and self.n_simbolos > N_MAX_SIN_TRIANGULO:
+            raise ValueError(
+                "Sin el triángulo, la cantidad de símbolos debe ser un entero entre "
+                f"{N_MIN} y {N_MAX_SIN_TRIANGULO} (valor recibido: {self.n_simbolos})."
+            )
         if PERSONALIZADO in self.papeles and self.papel_personalizado is None:
             raise ValueError(
                 "Elegiste papel personalizado pero no indicaste su ancho y alto en mm."

@@ -8,9 +8,9 @@ el desempate prefiere menos trazos y después el orden de los ids (determinista)
 
 from functools import lru_cache
 
-from mosaico_tramas.config import N_MAX, N_MIN
+from mosaico_tramas.config import N_MAX, N_MIN, MosaicoConfig
 from mosaico_tramas.errores import ConfigInvalidaError, ErrorBibliotecaSimbolos
-from mosaico_tramas.simbolos.biblioteca import BIBLIOTECA, ID_LLENO, ID_PUNTO
+from mosaico_tramas.simbolos.biblioteca import BIBLIOTECA, ID_LLENO, ID_PUNTO, SIN_TRIANGULO
 from mosaico_tramas.simbolos.primitivas import Simbolo
 from mosaico_tramas.simbolos.raster import cobertura
 
@@ -102,3 +102,9 @@ def _supera(nueva: _Clave, actual: _Clave) -> bool:
     if nueva[1] != actual[1]:
         return nueva[1] > actual[1]
     return nueva[2] < actual[2]
+
+
+def simbolos_para(config: MosaicoConfig) -> tuple[Simbolo, ...]:
+    """Símbolos de la config: con o sin triángulo según `usar_triangulo`."""
+    biblioteca = BIBLIOTECA if config.usar_triangulo else SIN_TRIANGULO
+    return elegir_simbolos(config.n_simbolos, biblioteca)
