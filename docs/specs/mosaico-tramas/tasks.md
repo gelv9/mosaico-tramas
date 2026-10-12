@@ -98,19 +98,19 @@
   - Cubre: RF5.7 y RF5.7a.
   - Test: A4 + Letter dan las mismas cols × filas. Si un papel falla, el error lo nombra y las sugerencias sirven para ambos.
 
-- [ ] **T19 — PDF de la plantilla.** `render_pdf`: canvas invariante, grilla, números grises y marca de blanco.
+- [x] **T19 — PDF de la plantilla.** `render_pdf`: canvas invariante, grilla, números grises y marca de blanco.
   - Cubre: RF5.5, RF7.1, RF7.1a y RF7.2.
   - Test (**CA14, CA15**): el texto extraído contiene exactamente un número por celda no vacía y ninguno extra. La cantidad de puntitos de la marca coincide con las celdas vacías (se cuentan los operadores del content stream); con `marca_blanco=False` hay 0.
 
-- [ ] **T20 — PDF de la leyenda.** Leyenda `below` en la misma página o `separate` en su propia página, con las instrucciones en inglés (RF6.7 y RF6.8).
+- [x] **T20 — PDF de la leyenda.** Leyenda `below` en la misma página o `separate` en su propia página, con las instrucciones en inglés (RF6.7 y RF6.8).
   - Cubre: RF6.1–RF6.8 y RF7.6.
   - Test (**CA5, CA6**): con `below` (si entra) hay 1 página de plantilla y su texto incluye "Draw the symbol shown for each number". Con `below` movida o con `separate`, la leyenda está en la página 2. El texto blank aparece solo con la marca activa.
 
-- [ ] **T21 — PDF de la solución y orden de páginas.** Un path por nivel, clip y grilla tenue opcional.
+- [x] **T21 — PDF de la solución y orden de páginas.** Un path por nivel, clip y grilla tenue opcional.
   - Cubre: RF7.4 y RF7.5.
   - Test: la cantidad de páginas es la esperada para cada combinación (leyenda × solución). La solución no tiene números ni puntitos de marca.
 
-- [ ] **T22 — Dimensiones y márgenes del PDF.** Verificación integral para cada papel y orientación.
+- [x] **T22 — Dimensiones y márgenes del PDF.** Verificación integral para cada papel y orientación.
   - Cubre: RF5.1 y RF5.4.
   - Test (**CA4**): el MediaBox es correcto (±0,01 pt) para A4, LETTER, A3, TABLOID y CUSTOM, tanto vertical como horizontal. Las coordenadas extremas de los operadores de dibujo quedan dentro de los márgenes.
 
