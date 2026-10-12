@@ -25,7 +25,7 @@ def test_defaults():
     assert config.margen_mm == 12.7
     assert config.recorte is Recorte.FIT
     assert config.leyenda is UbicacionLeyenda.BELOW
-    assert config.incluir_solucion and config.marca_blanco
+    assert config.incluir_solucion
     assert not config.grilla_en_solucion
 
 
@@ -170,3 +170,8 @@ def test_estilo_de_grilla():
     assert MosaicoConfig.crear(estilo_grilla="dots").estilo_grilla == "dots"
     with pytest.raises(ConfigInvalidaError, match="estilo de grilla debe ser uno de"):
         MosaicoConfig.crear(estilo_grilla="rayas")
+
+
+def test_ya_no_existe_la_marca_de_vacio():
+    with pytest.raises(ConfigInvalidaError, match="Parámetro desconocido: 'marca_blanco'"):
+        MosaicoConfig.crear(marca_blanco=True)

@@ -21,14 +21,14 @@ A4_ANCHO_UTIL = mm_a_pt(210 - 2 * 12.7)
 # --- T15: alto de la leyenda ---
 
 
-def test_alto_leyenda_n6_con_marca_en_a4_vertical():
-    # 7 entradas (6 símbolos + vacío) en filas de 5 → 2 filas: 6 + 4,6 + 2 × 14 = 38,6 mm
-    assert alto_leyenda(6, True, A4_ANCHO_UTIL) == pytest.approx(mm_a_pt(38.6), abs=0.01)
+def test_alto_leyenda_n6_en_a4_vertical():
+    # 6 entradas en filas de 5 → 2 filas: 6 + 4,6 + 2 × 14 = 38,6 mm
+    assert alto_leyenda(6, A4_ANCHO_UTIL) == pytest.approx(mm_a_pt(38.6), abs=0.01)
 
 
-def test_alto_leyenda_sin_marca_tiene_una_entrada_menos():
+def test_alto_leyenda_una_fila():
     # 5 entradas en filas de 5 → 1 fila
-    assert alto_leyenda(5, False, A4_ANCHO_UTIL) == pytest.approx(mm_a_pt(24.6), abs=0.01)
+    assert alto_leyenda(5, A4_ANCHO_UTIL) == pytest.approx(mm_a_pt(24.6), abs=0.01)
 
 
 def test_entradas_por_fila_segun_ancho():

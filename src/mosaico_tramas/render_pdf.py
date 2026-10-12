@@ -3,7 +3,7 @@
 Los símbolos usan coordenadas normalizadas con y hacia abajo; acá se convierten a puntos PDF
 (y hacia arriba) a partir de la esquina superior izquierda de la celda.
 
-Cada símbolo (y la marca de blanco) se define una vez como Form XObject del tamaño de la
+Cada símbolo (y el punto de la grilla) se define una vez como Form XObject del tamaño de la
 celda y se coloca en cada celda: el PDF queda chico, el BBox del form recorta el símbolo a su
 celda y los tests pueden contar exactamente qué se dibujó.
 """
@@ -40,10 +40,8 @@ ANCHO_LINEA_GRILLA = 0.3
 FUENTE = "Helvetica"
 FUENTE_NEGRITA = "Helvetica-Bold"
 
-INSTRUCCION = "Draw the symbol shown for each number. Leave unnumbered cells blank."
-INSTRUCCION_MARCA = "Cells with a faint dot: leave blank."
+INSTRUCCION = "Draw the symbol shown for each number in every cell."
 
-NOMBRE_MARCA = "marca_blanco"
 NOMBRE_PUNTO_GRILLA = "punto_grilla"
 NOMBRE_PUNTO_GRILLA_TENUE = "punto_grilla_tenue"
 RADIO_PUNTO_GRILLA = 0.5  # pt (diámetro ≈ 0,35 mm)
@@ -97,29 +95,12 @@ def dibujar_simbolo(
     canvas.restoreState()
 
 
-def radio_marca(celda_pt: float) -> float:
-    """Radio de la marca de blanco (RF7.1a): diámetro ≈ 8 % del lado, mínimo 0,3 mm."""
-    return max(mm_a_pt(0.15), 0.04 * celda_pt)
-
-
-def _dibujar_marca(canvas: Canvas, x: float, y_sup: float, lado: float, celda_pt: float) -> None:
-    canvas.saveState()
-    canvas.setFillGray(GRIS_GRILLA)
-    canvas.circle(
-        x + lado / 2, y_sup - lado / 2, radio_marca(celda_pt) * lado / celda_pt, stroke=0, fill=1
-    )
-    canvas.restoreState()
-
-
 def _definir_forms(canvas: Canvas, simbolos: tuple[Simbolo, ...], celda: float) -> None:
-    """Un Form XObject por símbolo y otro para la marca, del tamaño de la celda."""
+    """Un Form XObject por símbolo (del tamaño de la celda) y los puntos de grilla."""
     for simbolo in simbolos:
         canvas.beginForm(nombre_form(simbolo), lowerx=0, lowery=0, upperx=celda, uppery=celda)
         dibujar_simbolo(canvas, simbolo, 0, celda, celda, recortar=False)
         canvas.endForm()
-    canvas.beginForm(NOMBRE_MARCA, lowerx=0, lowery=0, upperx=celda, uppery=celda)
-    _dibujar_marca(canvas, 0, celda, celda, celda)
-    canvas.endForm()
     # Puntos de la grilla (RF7.2a), centrados en el origen del form
     r = RADIO_PUNTO_GRILLA
     for nombre, gris in (
@@ -175,18 +156,15 @@ def _colocar_form(canvas: Canvas, nombre: str, x: float, y: float) -> None:
 def _pagina_plantilla(
     canvas: Canvas, niveles: npt.NDArray[np.uint8], layout: Layout, config: MosaicoConfig
 ) -> None:
-    """Grilla gris con el número de cada celda no vacía y la marca en las vacías (RF7.1–7.2)."""
+    """Grilla gris con el número de cada celda: no hay celdas vacías (RF7.1–7.2)."""
     _grilla(canvas, layout, GRIS_GRILLA, config.estilo_grilla)
     c = layout.celda_pt
     tamano = max(4.0, 0.45 * c)
     canvas.setFont(FUENTE, tamano)
     canvas.setFillGray(GRIS_NUMEROS)
     for nivel, x, y in _celdas(niveles, layout):
-        if nivel > 0:
-            # Centrado vertical aproximando la altura de las cifras a 0,7 del tamaño
-            canvas.drawCentredString(x + c / 2, y + c / 2 - 0.35 * tamano, str(nivel))
-        elif config.marca_blanco:
-            _colocar_form(canvas, NOMBRE_MARCA, x, y)
+        # Centrado vertical aproximando la altura de las cifras a 0,7 del tamaño
+        canvas.drawCentredString(x + c / 2, y + c / 2 - 0.35 * tamano, str(nivel))
 
 
 def _pagina_solucion(
@@ -196,7 +174,7 @@ def _pagina_solucion(
     layout: Layout,
     config: MosaicoConfig,
 ) -> None:
-    """Resultado terminado: cada celda con su símbolo, sin números ni marcas (RF7.4).
+    """Resultado terminado: cada celda con su símbolo, sin números (RF7.4).
 
     Esta página no lleva leyenda: la grilla se centra en el área útil completa.
     """
@@ -206,8 +184,7 @@ def _pagina_solucion(
     if config.grilla_en_solucion:
         _grilla(canvas, layout, GRIS_GRILLA_SOLUCION, config.estilo_grilla, tenue=True)
     for nivel, x, y in _celdas(niveles, layout):
-        if nivel > 0:
-            _colocar_form(canvas, nombre_form(simbolos[nivel - 1]), x, y)
+        _colocar_form(canvas, nombre_form(simbolos[nivel - 1]), x, y)
 
 
 def _texto_ajustado(canvas: Canvas, texto: str, x: float, y: float, ancho_max: float) -> None:
@@ -229,7 +206,7 @@ def _leyenda(
     """Instrucción en inglés y una entrada por nivel, de claro a oscuro (RF6.6–6.8)."""
     x0, _, x1, y1 = rect
     ancho = x1 - x0
-    texto = INSTRUCCION + (f" {INSTRUCCION_MARCA}" if config.marca_blanco else "")
+    texto = INSTRUCCION
     y_texto = y1 - mm_a_pt(SEPARACION_LEYENDA_MM) - mm_a_pt(ALTO_INSTRUCCION_MM) + 3
     canvas.saveState()
     canvas.setFillGray(0)
@@ -239,28 +216,19 @@ def _leyenda(
     techo = y1 - mm_a_pt(SEPARACION_LEYENDA_MM + ALTO_INSTRUCCION_MM)
     real = min(layout.celda_pt, mm_a_pt(LADO_AMPLIADO_MM))
     ampliado = mm_a_pt(LADO_AMPLIADO_MM)
-    entradas: list[tuple[str, Simbolo | None]] = [(str(i), s) for i, s in enumerate(simbolos, 1)]
-    if config.marca_blanco:
-        entradas.append(("blank", None))
+    entradas = [(str(i), s) for i, s in enumerate(simbolos, 1)]
 
     for i, (etiqueta, simbolo) in enumerate(entradas):
         ex = x0 + (i % por_fila) * mm_a_pt(ANCHO_ENTRADA_MM)
         centro_y = techo - (i // por_fila) * mm_a_pt(ALTO_ENTRADA_MM) - mm_a_pt(ALTO_ENTRADA_MM) / 2
         canvas.setFillGray(0)
-        if simbolo is None:
-            canvas.setFont(FUENTE, 7)
-            canvas.drawString(ex, centro_y - 2.5, etiqueta)
-        else:
-            canvas.setFont(FUENTE_NEGRITA, 11)
-            canvas.drawString(ex, centro_y - 4, etiqueta)
+        canvas.setFont(FUENTE_NEGRITA, 11)
+        canvas.drawString(ex, centro_y - 4, etiqueta)
         x_real = ex + mm_a_pt(7)
         x_ampliado = x_real + real + mm_a_pt(2)
         for x_caja, lado in ((x_real, real), (x_ampliado, ampliado)):
             y_sup = centro_y + lado / 2
-            if simbolo is None:
-                _dibujar_marca(canvas, x_caja, y_sup, lado, layout.celda_pt)
-            else:
-                dibujar_simbolo(canvas, simbolo, x_caja, y_sup, lado)
+            dibujar_simbolo(canvas, simbolo, x_caja, y_sup, lado)
             _caja(canvas, x_caja, y_sup - lado, lado, config.estilo_grilla)
     canvas.restoreState()
 
@@ -281,7 +249,7 @@ def _caja(canvas: Canvas, x: float, y: float, lado: float, estilo: EstiloGrilla)
 def rect_leyenda_aparte(layout: Layout, config: MosaicoConfig) -> Rect:
     """Rectángulo de la leyenda en su propia página: arriba del área útil."""
     x0, _, x1, y1 = layout.area_util()
-    alto = alto_leyenda(config.n_simbolos, config.marca_blanco, x1 - x0)
+    alto = alto_leyenda(config.n_simbolos, x1 - x0)
     return (x0, y1 - alto, x1, y1)
 
 

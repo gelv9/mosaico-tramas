@@ -14,8 +14,6 @@ from mosaico_tramas.layout import Layout, calcular_layout
 from mosaico_tramas.papel import REGISTRO_PAPELES, Orientacion, mm_a_pt
 from mosaico_tramas.render_pdf import (
     INSTRUCCION,
-    INSTRUCCION_MARCA,
-    NOMBRE_MARCA,
     NOMBRE_PUNTO_GRILLA,
     NOMBRE_PUNTO_GRILLA_TENUE,
     generar_pdf,
@@ -28,7 +26,7 @@ _FORM = re.compile(r"/FormXob\.(\w+) Do")
 
 
 def _niveles(filas: int, cols: int, n: int, semilla: int = 7) -> npt.NDArray[np.uint8]:
-    return np.random.default_rng(semilla).integers(0, n + 1, (filas, cols)).astype(np.uint8)
+    return np.random.default_rng(semilla).integers(1, n + 1, (filas, cols)).astype(np.uint8)
 
 
 def _generar(
@@ -65,24 +63,18 @@ def _numeros_en_grilla(contenido: str, layout: Layout) -> list[int]:
 # --- T19: plantilla ---
 
 
-def test_ca14_un_numero_por_celda_no_vacia():
+def test_ca14_todas_las_celdas_tienen_numero():
     lector, niveles, layout, _ = _generar()
-    numeros = Counter(_numeros_en_grilla(_contenido(lector, 0), layout))
-    esperado = Counter(int(v) for v in niveles.ravel() if v > 0)
-    assert numeros == esperado
+    numeros = _numeros_en_grilla(_contenido(lector, 0), layout)
+    assert len(numeros) == niveles.size
+    assert Counter(numeros) == Counter(int(v) for v in niveles.ravel())
     assert 0 not in numeros
 
 
-def test_ca15_marca_en_cada_celda_vacia():
-    lector, niveles, _, _ = _generar()
-    formas = Counter(_FORM.findall(_contenido(lector, 0)))
-    assert formas[NOMBRE_MARCA] == int((niveles == 0).sum())
-
-
-def test_ca15_sin_marca_no_hay_puntitos():
-    lector, _, _, _ = _generar(marca_blanco=False)
-    assert NOMBRE_MARCA not in _FORM.findall(_contenido(lector, 0))
-    assert INSTRUCCION_MARCA not in lector.pages[0].extract_text()
+def test_no_hay_marca_de_vacio_ni_entrada_blank():
+    lector, _, _, _ = _generar(leyenda="separate")
+    assert all("marca" not in nombre for nombre in _FORM.findall(_contenido(lector, 0)))
+    assert "blank" not in lector.pages[1].extract_text()
 
 
 def test_numeros_y_grilla_en_gris():
@@ -118,9 +110,8 @@ def test_ca6_leyenda_aparte_siempre_en_su_pagina():
     assert INSTRUCCION in lector.pages[1].extract_text().replace("\n", " ")
 
 
-def test_texto_de_la_marca_en_la_leyenda():
-    lector, _, _, _ = _generar(leyenda="separate")
-    assert INSTRUCCION_MARCA in lector.pages[1].extract_text().replace("\n", " ")
+def test_instruccion_sin_celdas_vacias():
+    assert INSTRUCCION == "Draw the symbol shown for each number in every cell."
 
 
 def test_leyenda_lista_todos_los_niveles():
@@ -147,7 +138,7 @@ def test_solucion_tiene_cada_simbolo_y_nada_mas():
     contenido = _contenido(lector, 1)
     assert _NUMERO_EN.findall(contenido) == []
     formas = Counter(_FORM.findall(contenido))
-    assert NOMBRE_MARCA not in formas
+    assert sum(formas.values()) == niveles.size  # un símbolo en cada celda
     simbolos = simbolos_para(config)
     for nivel in range(1, config.n_simbolos + 1):
         assert formas[nombre_form(simbolos[nivel - 1])] == int((niveles == nivel).sum())

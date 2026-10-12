@@ -38,10 +38,9 @@ def entradas_por_fila(ancho_util_pt: float) -> int:
     return max(1, int(ancho_util_pt // mm_a_pt(ANCHO_ENTRADA_MM)))
 
 
-def alto_leyenda(n: int, marca_blanco: bool, ancho_util_pt: float) -> float:
+def alto_leyenda(n: int, ancho_util_pt: float) -> float:
     """Alto total del bloque de leyenda en pt: separación + instrucción + filas de entradas."""
-    entradas = n + (1 if marca_blanco else 0)
-    filas = math.ceil(entradas / entradas_por_fila(ancho_util_pt))
+    filas = math.ceil(n / entradas_por_fila(ancho_util_pt))
     return mm_a_pt(SEPARACION_LEYENDA_MM + ALTO_INSTRUCCION_MM + filas * ALTO_ENTRADA_MM)
 
 
@@ -119,7 +118,7 @@ def calcular_layout(
     cols = config.columnas
     minimo = mm_a_pt(CELDA_MIN_MM)
     debajo = config.leyenda is UbicacionLeyenda.BELOW
-    alto_ley = alto_leyenda(config.n_simbolos, config.marca_blanco, uw)
+    alto_ley = alto_leyenda(config.n_simbolos, uw)
 
     filas = _filas(config, ancho_img, alto_img, uw, uh - alto_ley if debajo else uh, filas_fijas)
     celda_completa = min(uw / cols, uh / filas)
@@ -186,7 +185,7 @@ def _celda_completa(
     """Celda sin contar la leyenda: el criterio duro de los 4 mm."""
     _, _, _, _, uw, uh = _geometria_util(config, ancho_img, alto_img, papel)
     debajo = config.leyenda is UbicacionLeyenda.BELOW
-    alto_ley = alto_leyenda(config.n_simbolos, config.marca_blanco, uw)
+    alto_ley = alto_leyenda(config.n_simbolos, uw)
     filas = _filas(config, ancho_img, alto_img, uw, uh - alto_ley if debajo else uh, filas_fijas)
     return min(uw / config.columnas, uh / filas)
 
@@ -226,9 +225,7 @@ def personalizado_minimo(
     if config.leyenda is UbicacionLeyenda.BELOW:
         # La leyenda se mide con el ancho útil del papel sugerido (más angosto o más ancho)
         ancho_util_sugerido = mm_a_pt(ancho - 2 * margen)
-        alto_ley_mm = alto_leyenda(
-            config.n_simbolos, config.marca_blanco, ancho_util_sugerido
-        ) / mm_a_pt(1)
+        alto_ley_mm = alto_leyenda(config.n_simbolos, ancho_util_sugerido) / mm_a_pt(1)
     alto = math.ceil(filas * CELDA_MIN_MM + 2 * margen + alto_ley_mm)
     if max(ancho, alto) > PERSONALIZADO_MAX_MM or min(ancho, alto) < PERSONALIZADO_MIN_MM:
         return None

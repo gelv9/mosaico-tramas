@@ -121,7 +121,6 @@ def _controles(settings: Settings) -> dict[str, object]:
     )
     leyenda = barra.radio("Leyenda", list(LEYENDAS), format_func=LEYENDAS.get, key="leyenda")
     solucion = barra.checkbox("Incluir página de solución", value=True, key="incluir_solucion")
-    marca = barra.checkbox("Puntito tenue en celdas vacías", value=True, key="marca_blanco")
     grilla_sol = barra.checkbox(
         "Grilla tenue en la solución", value=False, key="grilla_en_solucion"
     )
@@ -140,7 +139,6 @@ def _controles(settings: Settings) -> dict[str, object]:
         "recorte": "center" if rellenar else "fit",
         "leyenda": leyenda,
         "incluir_solucion": solucion,
-        "marca_blanco": marca,
         "grilla_en_solucion": grilla_sol,
         "estilo_grilla": estilo_grilla,
     }
@@ -187,10 +185,10 @@ def _error_celda_chica(error: CeldaDemasiadoChicaError) -> None:
 def _histograma(resultado: Resultado) -> alt.LayerChart:
     """Barras de celdas por nivel y una línea con el mínimo aceptable (RF3.6, RF3.7)."""
     n = resultado.config.n_simbolos
-    nombres = ["vacío", *(s.id for s in resultado.simbolos)]
+    nombres = [s.id for s in resultado.simbolos]
     datos = pd.DataFrame(
         {
-            "nivel": [f"{i} · {nombres[i]}" for i in range(n + 1)],
+            "nivel": [f"{i} · {nombres[i - 1]}" for i in range(1, n + 1)],
             "porcentaje": resultado.distribucion.porcentajes,
             "celdas": resultado.distribucion.conteos,
         }
@@ -205,7 +203,7 @@ def _histograma(resultado: Resultado) -> alt.LayerChart:
         )
     )
     minimo = (
-        alt.Chart(pd.DataFrame({"minimo": [50 / (n + 1)]}))
+        alt.Chart(pd.DataFrame({"minimo": [50 / n]}))
         .mark_rule(strokeDash=[4, 4], color="gray")
         .encode(y="minimo:Q")
     )

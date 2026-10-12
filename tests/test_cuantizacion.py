@@ -231,14 +231,15 @@ def test_ca10_limite_se_cumple_con_ruido_activo(metodo: str, png_foto: bytes):
     )
     resultado = cuantizar(d, config)
     assert (resultado.niveles == 6).sum() <= int(0.05 * d.size)
-    assert resultado.distribucion.porcentajes[6] <= 5.0
+    assert resultado.niveles.min() >= 1
+    assert resultado.distribucion.porcentajes[-1] <= 5.0
 
 
 def test_distribucion_suma_el_total(png_foto: bytes):
     d = _oscuridad(png_foto)
     resultado = cuantizar(d, MosaicoConfig.crear())
     dist = resultado.distribucion
-    assert len(dist.conteos) == 7
+    assert len(dist.conteos) == 6  # niveles 1…6, sin vacío
     assert sum(dist.conteos) == d.size
     assert sum(dist.porcentajes) == pytest.approx(100.0)
 
@@ -265,7 +266,7 @@ def test_no_avisa_por_el_nivel_n_recortado_a_proposito(png_degradado: bytes):
     # 2 % < la mitad de la cuota ideal (7,1 % para N = 6): recortado a propósito, sin aviso
     config = MosaicoConfig.crear(n_simbolos=6, limitar_oscuros=True, max_oscuros_pct=2)
     resultado = cuantizar(d, config)
-    assert resultado.distribucion.porcentajes[6] <= 2.0
+    assert resultado.distribucion.porcentajes[-1] <= 2.0
     assert not any("nivel 6" in a.mensaje for a in resultado.avisos)
 
 
@@ -273,3 +274,24 @@ def test_cuantizar_determinista(png_foto: bytes):
     d = _oscuridad(png_foto)
     config = MosaicoConfig.crear(metodo="kmeans")
     assert np.array_equal(cuantizar(d, config).niveles, cuantizar(d, config).niveles)
+
+
+# --- T31: sin celdas vacías ---
+
+
+@pytest.mark.parametrize("imagen", ["png_degradado", "png_foto"])
+def test_ca3_cuantizar_reparte_en_6_niveles_sin_vacio(imagen: str, request):
+    d = _oscuridad(request.getfixturevalue(imagen))
+    config = MosaicoConfig.crear(reduccion_ruido=False, limitar_oscuros=False)
+    resultado = cuantizar(d, config)
+    assert resultado.niveles.min() == 1  # lo más claro es el punto, no el vacío
+    assert resultado.niveles.max() == 6
+    assert min(resultado.distribucion.porcentajes) >= 0.5 * 100 / 6
+
+
+def test_mensaje_de_nivel_infrautilizado_usa_niveles_1_a_n():
+    d = np.zeros((50, 50), dtype=np.float32)
+    d.ravel()[-500:] = np.linspace(0.01, 1.0, 500)
+    config = MosaicoConfig.crear(reduccion_ruido=False, limitar_oscuros=False)
+    mensajes = " ".join(a.mensaje for a in cuantizar(d, config).avisos)
+    assert "vacía" not in mensajes and "nivel 0" not in mensajes

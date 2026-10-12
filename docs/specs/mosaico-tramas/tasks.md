@@ -161,7 +161,7 @@
 
 ## Bloque F — Sin celdas vacías (corrección del usuario)
 
-- [ ] **T31 — Toda celda lleva símbolo.** Cuantización a N niveles (1…N), plantilla con número en cada celda, sin marca de vacío ni entrada 'blank', instrucción nueva en la leyenda y sin `marca_blanco` en la config ni en la UI.
+- [x] **T31 — Toda celda lleva símbolo.** Cuantización a N niveles (1…N), plantilla con número en cada celda, sin marca de vacío ni entrada 'blank', instrucción nueva en la leyenda y sin `marca_blanco` en la config ni en la UI.
   - Cubre: RF1.2, RF3.1, RF3.2, RF3.7, RF6.7 y RF7.1.
   - Test (**CA3, CA14**): ningún nivel 0 en la cuantización, reparto ≈ 1/N, un número por celda en la plantilla y un símbolo por celda en la solución.
 

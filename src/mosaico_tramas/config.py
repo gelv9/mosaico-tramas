@@ -23,7 +23,7 @@ N_SIMBOLOS = 6
 
 
 class MetodoCuantizacion(StrEnum):
-    """Método para repartir la luminancia en N + 1 niveles."""
+    """Método para repartir la luminancia en N niveles (sin celdas vacías)."""
 
     QUANTILES = "quantiles"
     KMEANS = "kmeans"
@@ -105,7 +105,6 @@ class MosaicoConfig(BaseModel):
     recorte: Recorte = Recorte.FIT
     leyenda: UbicacionLeyenda = UbicacionLeyenda.BELOW
     incluir_solucion: bool = True
-    marca_blanco: bool = True
     grilla_en_solucion: bool = False
     estilo_grilla: EstiloGrilla = EstiloGrilla.LINEAS
     percentil_bajo: float = 2.0

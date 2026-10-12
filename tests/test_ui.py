@@ -51,7 +51,6 @@ def test_tiene_todos_los_controles(app: AppTest):
         "rellenar",
         "leyenda",
         "incluir_solucion",
-        "marca_blanco",
         "estilo_grilla",
     }
     for clave in claves:

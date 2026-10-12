@@ -1,6 +1,6 @@
 """Previews raster por composición de tiles (RF5.6, design.md §9).
 
-Cada símbolo, número y marca se rasteriza una sola vez a t × t px; la imagen final se arma
+Cada símbolo y número se rasteriza una sola vez a t × t px; la imagen final se arma
 indexando los tiles con la matriz de niveles, sin dibujar celda por celda.
 """
 
@@ -56,8 +56,8 @@ def _lado_punto(t: int) -> int:
 
 
 @lru_cache(maxsize=32)
-def _tiles_plantilla(n: int, t: int, marca_blanco: bool, puntos: bool) -> Imagen:
-    """Tiles con borde (o punto de esquina) arriba a la izquierda, número y marca."""
+def _tiles_plantilla(n: int, t: int, puntos: bool) -> Imagen:
+    """Tiles con borde (o punto de esquina) arriba a la izquierda y el número del nivel."""
     fuente = ImageFont.load_default(size=max(6, round(0.45 * t)))
     tiles = []
     for nivel in range(n + 1):
@@ -69,11 +69,8 @@ def _tiles_plantilla(n: int, t: int, marca_blanco: bool, puntos: bool) -> Imagen
         else:
             dibujo.line([(0, 0), (t - 1, 0)], fill=GRIS_GRILLA)
             dibujo.line([(0, 0), (0, t - 1)], fill=GRIS_GRILLA)
-        if nivel > 0:
+        if nivel > 0:  # el tile 0 no se usa: no hay celdas vacías
             dibujo.text((t / 2, t / 2), str(nivel), fill=GRIS_NUMEROS, font=fuente, anchor="mm")
-        elif marca_blanco:
-            r = max(1.0, 0.04 * t)
-            dibujo.ellipse([t / 2 - r, t / 2 - r, t / 2 + r, t / 2 + r], fill=GRIS_GRILLA)
         tiles.append(np.asarray(tile))
     return np.stack(tiles)
 
@@ -81,15 +78,14 @@ def _tiles_plantilla(n: int, t: int, marca_blanco: bool, puntos: bool) -> Imagen
 def png_plantilla(
     niveles: npt.NDArray[np.uint8],
     lado_px: int,
-    marca_blanco: bool,
     estilo_grilla: str = "lines",
 ) -> bytes:
-    """Plantilla: grilla (líneas o puntos) y números en gris; las celdas vacías sin número."""
+    """Plantilla: grilla (líneas o puntos) y el número de cada celda, en gris."""
     filas, cols = niveles.shape
     t = tamano_tile(cols, filas, lado_px)
     n = int(niveles.max()) if niveles.size else 0
     puntos = estilo_grilla == "dots"
-    imagen = _componer(_tiles_plantilla(max(n, 1), t, marca_blanco, puntos), niveles).copy()
+    imagen = _componer(_tiles_plantilla(max(n, 1), t, puntos), niveles).copy()
     # Cierra la grilla a la derecha y abajo
     if puntos:
         lado = _lado_punto(t)
