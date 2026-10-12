@@ -114,7 +114,7 @@
   - Cubre: RF5.1 y RF5.4.
   - Test (**CA4**): el MediaBox es correcto (±0,01 pt) para A4, LETTER, A3, TABLOID y CUSTOM, tanto vertical como horizontal. Las coordenadas extremas de los operadores de dibujo quedan dentro de los márgenes.
 
-- [ ] **T23 — Render PNG.** `render_png`: composición por tiles de la solución y la plantilla, con el lado largo configurable.
+- [x] **T23 — Render PNG.** `render_png`: composición por tiles de la solución y la plantilla, con el lado largo configurable.
   - Cubre: RF5.6.
   - Test: las dimensiones son correctas y la salida es determinista byte a byte. Una celda de nivel N es negra y una de nivel 0 blanca en la solución.
 
