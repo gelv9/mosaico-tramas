@@ -18,7 +18,7 @@
   - Cubre: RF5.1, RF5.1a, RF5.1b, RF5.2 y RF5.3.
   - Test: `test_papel.py`. Las medidas en pt coinciden (±0,01) con la tabla de RF5.1, `auto` responde según la proporción, y un papel personalizado fuera de rango da error en español.
 
-- [ ] **T3 — Configuración.** `config.py`: `MosaicoConfig`, los enums y `PapelPersonalizado`, con validadores en español y validaciones cruzadas.
+- [x] **T3 — Configuración.** `config.py`: `MosaicoConfig`, los enums y `PapelPersonalizado`, con validadores en español y validaciones cruzadas.
   - Cubre: RF1.1, RF1.3, RF3.4, RF3.5, RF4.1, RF5.4, RNF4 y RF5.1a.
   - Test: `test_config.py` (**CA2**). Con N = 4, 11, 7,5, `True` y `"x"` se obtiene el mensaje exacto de RF1.3. También se prueban los rangos de columnas, márgenes, umbral y porcentaje de oscuros, que se exija `papel_personalizado` cuando se elige CUSTOM, que `percentil_bajo` sea menor que `percentil_alto` y que la config sea inmutable.
 
