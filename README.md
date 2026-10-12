@@ -51,17 +51,28 @@ streamlit run src/mosaico_tramas/ui/app.py
 | Papel | A4, Letter, A3, Tabloid, personalizado (100–1200 mm) | Se pueden elegir varios: misma grilla en todos. |
 | Orientación | automática, vertical, horizontal | La automática sigue la proporción de la imagen. |
 | Márgenes | 5 a 40 mm (por defecto 12,7 mm) | Seguro para impresoras hogareñas. |
+| Celda mínima | 3 a 4 mm (por defecto 3,5 mm) | Límite duro: por debajo no se genera la plantilla. |
+| Grosor de la microfibra | 0,1 a 1 mm (por defecto 0,5 mm) | La solución y la preview se dibujan con ese grosor. |
 | Rellenar la hoja | sí / no | Sí: recorta la imagen al centro para llenar la hoja. |
 | Estilo de grilla | líneas / puntos en las esquinas | Gris muy claro (18 %) para que no se note en el dibujo final. |
 | Leyenda | debajo / en hoja aparte | Si no entra debajo, pasa sola a una hoja aparte con un aviso. |
 
-**Celda mínima de 4 mm.** Por debajo de 4 mm no se genera nada: la app explica por qué y
-ofrece, con un clic, usar menos columnas, otro papel o un papel personalizado. Como referencia,
-A4 admite unas 45 columnas en vertical y 54 en horizontal.
+**Celda mínima.** Por debajo del mínimo configurado no se genera nada: la app explica por qué
+y ofrece, con un clic, usar menos columnas, otro papel o un papel personalizado. Columnas que
+admite A4 según la celda mínima:
 
-**Útil recomendado (para el listing):** una fibra o fineliner de **0,5 mm**. Las coberturas de
-tinta de los símbolos están medidas con ese trazo en una celda de 4 mm; con una birome más
-fina el dibujo sale algo más claro.
+| Celda mínima | A4 vertical | A4 horizontal |
+|---|---|---|
+| 4 mm | 46 | 67 |
+| 3,5 mm | 52 | 77 |
+| 3 mm | 61 | 90 |
+
+Con celdas más chicas las formas se leen mucho mejor (el trazo se funde en tono), pero cuesta
+más dibujar. Conviene validarlo con pruebas impresas.
+
+**Microfibra.** Con celdas de 3 mm conviene una de 0,2–0,3 mm; con 4 mm, una de 0,5 mm. Elegí
+en la app el grosor que vas a recomendar en el listing: la solución impresa muestra el resultado
+que se logra con esa microfibra.
 
 ## Uso desde código (sin Streamlit)
 
