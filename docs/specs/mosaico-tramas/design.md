@@ -138,6 +138,23 @@ class MosaicoConfig(BaseModel, frozen=True):
 - **Medición de la cobertura (RF2.3):** rasterizado con OpenCV a 1000 × 1000 px, antialiasing y recorte a la celda; la cobertura es la media de la tinta. Se calcula una vez y se cachea con `lru_cache`. Ningún valor se carga a mano.
 - **Un solo origen de la geometría.** Las primitivas son la única fuente: tanto ReportLab como OpenCV dibujan a partir de ellas, así que la cobertura medida y lo que se imprime coinciden.
 
+### 4.0 Estilo clásico (checkpoint D, vigente)
+
+La biblioteca es el set fijo de la referencia que encontró el usuario (un libro impreso con 45 columnas en A4). Las secciones 4.2 a 4.4 quedan como historia de las iteraciones anteriores.
+
+| Nivel | id | familia | trazos | cobertura (fibra 0,5 mm en 4 mm) |
+|---|---|---|---|---|
+| 1 | `punto` | punto | 1 | 2,0 % |
+| 2 | `diag_asc` | diagonal / | 1 | 17,0 % |
+| 3 | `diag_desc` | diagonal \ | 1 | 17,0 % (mismo tono que /, a propósito) |
+| 4 | `aspa` | aspa X | 2 | 32,4 % |
+| 5 | `asterisco` | asterisco (X + +, 8 rayos) | 4, todos por el centro | ≈ 50 % |
+| 6 | `lleno` | lleno | 1 | 100 % |
+
+`elegir_simbolos()` devuelve este orden fijo; ya no hay backtracking. La cuantización sigue repartiendo las celdas en 7 niveles (0…6), y los niveles 2 y 3 se dibujan con el mismo tono y distinta dirección.
+
+**Estilo de grilla (RF7.2a).** `EstiloGrilla.LINEAS` dibuja las líneas como antes. `EstiloGrilla.PUNTOS` dibuja un punto gris (Form XObject `punto_grilla`, radio 0,35 pt) en cada esquina de celda. En el PNG, el punto va en la esquina superior izquierda de cada tile, y la última fila y columna se cierran aparte.
+
 ### 4.2 Catálogo (10 candidatos, coberturas medidas con fibra de 0,5 mm en celda de 4 mm)
 
 Todos los símbolos pasan la regla física de RF2.6: como máximo 3 trazos y al menos 2 mm entre rayas paralelas en una celda de 4 mm, contando la celda vecina. Las rayas van de borde a borde y con espaciado parejo entre celdas vecinas, para que las zonas parejas formen un tramado continuo. Tests geométricos verifican las dos cosas.

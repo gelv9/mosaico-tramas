@@ -36,26 +36,21 @@
 
 ### RF1 — Cantidad de símbolos configurable
 
-- **RF1.1** — THE SYSTEM SHALL permitir elegir N con **N_MIN = 5** y **N_MAX = 7** *(decidido en el checkpoint A: con los símbolos fáciles de RF2.6 y la fibra de 0,5 mm, 7 es el máximo que respeta saltos de 6 pp y familias distintas)*.
+- **RF1.1** — THE SYSTEM SHALL usar **N = 6 símbolos fijos** (estilo clásico, ver RF2.4) *(enmienda del checkpoint D: estilo clásico de la referencia)*. *Historia: antes N era configurable entre 5 y 7.*
 - **RF1.2** — THE SYSTEM SHALL generar N + 1 niveles: la celda vacía más N símbolos. La celda vacía no se cuenta dentro de N.
-- **RF1.3** — IF N < 5 o N > 7, o N no es un entero, THEN THE SYSTEM SHALL rechazar la configuración con el mensaje en español *"La cantidad de símbolos debe ser un entero entre 5 y 7 (valor recibido: X)."*
-- **RF1.4** — WHERE la opción `usar_triangulo` está desactivada (está activada por defecto), THE SYSTEM SHALL excluir el triángulo de la biblioteca y limitar N a 5…6. Si se pide N = 7, el sistema rechaza la configuración con el mensaje en español *"Sin el triángulo, la cantidad de símbolos debe ser un entero entre 5 y 6 (valor recibido: 7)."* *(decidido en el checkpoint B: en fotos reales, el triángulo repetido arma un serrucho en las zonas oscuras grandes, así que es una elección estética del usuario)*.
+- **RF1.3** — IF se pide una cantidad de símbolos distinta de 6, THEN THE SYSTEM SHALL rechazar la configuración con el mensaje en español *"La cantidad de símbolos es fija: el estilo clásico usa 6 (valor recibido: X)."*
+- ~~**RF1.4**~~ — *Eliminado en el checkpoint D: el set clásico no usa el triángulo, así que la opción `usar_triangulo` deja de existir.*
 
 ### RF2 — Biblioteca de símbolos distinguibles
 
-- **RF2.1** — THE SYSTEM SHALL tener una biblioteca de **al menos 10 símbolos candidatos** *(checkpoint A)*. Supera N_MAX, de modo que haya margen para elegir según la forma y la densidad.
+- **RF2.1** — THE SYSTEM SHALL tener una biblioteca con los **6 símbolos del estilo clásico** *(enmienda del checkpoint D: estilo clásico de la referencia)*.
 - **RF2.2** — THE SYSTEM SHALL definir cada símbolo como vector, en coordenadas normalizadas de la celda (0–1), usando solo líneas, puntos y polígonos rellenos de ReportLab. Ningún símbolo puede ser una imagen raster.
 - **RF2.3** — THE SYSTEM SHALL **medir** la cobertura de tinta de cada símbolo rasterizándolo en las condiciones de referencia (*checkpoint A:* **fibra de 0,5 mm en una celda de 4 mm**, es decir, trazo relativo 0,125, rasterizado a 1000 × 1000 px por celda; es el útil que se recomienda en el listing). No se aceptan coberturas cargadas a mano.
-- **RF2.4** — WHEN se pide un subconjunto para N, THE SYSTEM SHALL devolver N símbolos que cumplan:
-  - (a) **cobertura estrictamente creciente** del nivel 1 al nivel N;
-  - (b) **diferencia mínima Δ_MIN = 6 puntos porcentuales** de cobertura entre niveles consecutivos 1…N, y **Δ_MIN_0 = 1,5 pp** entre el vacío (0 %) y el nivel 1 *(decidido, Q4a)*;
-  - (c) **forma distinta**: cada símbolo declara su *familia visual* en la biblioteca (diagonal, aspa, reja, bloque, …) y un subconjunto no puede tener dos símbolos de la misma familia *(enmienda aprobada en la Fase 2: reemplaza la regla 1 − IoU ≥ 0,35, que resultó infactible para los símbolos oscuros; ver design.md §4.3)*;
-  - (d) **el nivel N es siempre la celda rellena** (cobertura 100 %) *(decidido, Q3)*;
-  - (e) **el nivel 1 es siempre el punto central** *(decidido, Q4a)*. Los niveles 2…N−1 los elige el algoritmo.
-- **RF2.5** — WHEN hay más de un subconjunto válido, THE SYSTEM SHALL elegir el que **maximice la diferencia mínima** entre niveles consecutivos (máximo contraste perceptible). Los empates se resuelven de forma determinística.
-- **RF2.6** — THE SYSTEM SHALL limitar los símbolos a lo dibujable a mano: solo trazos rectos, puntos y relleno; **como máximo 3 trazos** por símbolo, donde un relleno cuenta como un trazo, y **al menos 2 mm entre rayas paralelas en una celda de 4 mm**, contando también la celda vecina *(regla física, checkpoint A: reemplaza el límite anterior de 6 trazos, que permitía rejas imposibles de dibujar en 4 mm)*.
-- **RF2.6a** — THE SYSTEM SHALL usar solo **rayas** (rectas), el **punto central**, el **triángulo de media celda** (una diagonal y se rellena una mitad) y la **celda llena**. No hay otros rellenos *(decidido en el checkpoint A)*.
-- **RF2.7** — IF para algún N entre 5 y 7 no existe un subconjunto que cumpla RF2.4, THEN THE SYSTEM SHALL fallar con un error interno explícito. Se trata de un error de la biblioteca, no del usuario, y un test lo cubre.
+- **RF2.4** — THE SYSTEM SHALL usar el **orden fijo** de la referencia, de claro a oscuro: **1 punto · 2 diagonal / · 3 diagonal \ · 4 aspa (X) · 5 asterisco (8 rayos) · 6 celda llena** *(enmienda del checkpoint D: estilo clásico de la referencia)*. La cobertura es **no decreciente**: los niveles 2 y 3 (/ y \) comparten tono a propósito, porque la dirección del trazo da textura y separa zonas vecinas. Todos los demás saltos son estrictamente crecientes, y el salto vacío → punto es de al menos 1,5 pp. *Historia: antes había selección automática con saltos de al menos 6 pp y familias distintas (design.md §4.4).*
+- ~~**RF2.5**~~ — *Eliminado en el checkpoint D (no hay selección automática).*
+- **RF2.6** — THE SYSTEM SHALL limitar los símbolos a lo dibujable a mano: solo trazos rectos, puntos y relleno; **como máximo 3 trazos, o 4 si todos se cruzan en el centro** (el asterisco), y **al menos 2 mm entre rayas paralelas en una celda de 4 mm**, contando también la celda vecina.
+- **RF2.6a** — THE SYSTEM SHALL usar solo **rayas**, el **punto central** y la **celda llena** (el único relleno) *(enmienda del checkpoint D: estilo clásico de la referencia)*.
+- **RF2.7** — IF la biblioteca no tiene alguno de los 6 símbolos del estilo clásico, THEN THE SYSTEM SHALL fallar con un error interno explícito (error de la biblioteca, no del usuario).
 - **RF2.8** — THE SYSTEM SHALL poder generar una **hoja de muestra de símbolos** para un N dado: cada símbolo con su número y su cobertura medida, a escala real y ampliada.
 
 ### RF3 — Cuantización que aprovecha todos los niveles
@@ -116,6 +111,7 @@
 
 - **RF7.1** — THE SYSTEM SHALL generar la **plantilla**: la grilla completa con el número del nivel (1…N) centrado en cada celda que no esté vacía. Las celdas vacías no llevan número.
 - **RF7.1a** — WHERE la marca de blanco está activa (opción, **activada por defecto**), THE SYSTEM SHALL imprimir en cada celda vacía de la plantilla un puntito centrado en el mismo gris que la grilla, con un diámetro de ≈ 8 % del lado de la celda (mínimo 0,3 mm), para indicar que se deja en blanco a propósito *(decidido, Q4b)*. En la página de solución no se imprime.
+- **RF7.2a** — THE SYSTEM SHALL permitir elegir el **estilo de grilla** de la plantilla: **líneas** grises (por defecto) o **puntos** grises en las esquinas de las celdas, como en la referencia. El mismo estilo se usa en la grilla tenue opcional de la solución y en los recuadros de la leyenda *(enmienda del checkpoint D)*.
 - **RF7.2** — THE SYSTEM SHALL dibujar las líneas de la grilla y los números en **gris claro**. Propuesta: líneas de 0,3 pt al 35 % de negro y números al 50 % de negro, con un tamaño de fuente de ≈ 45 % del lado de la celda (mínimo 4 pt).
 - **RF7.3** — THE SYSTEM SHALL incluir la **leyenda** según RF6.
 - **RF7.4** — WHERE la solución está activa (por defecto, sí), THE SYSTEM SHALL agregar una página aparte con la **solución**: cada celda con su símbolo en negro, sin números, y la grilla opcional en gris muy claro.
@@ -144,8 +140,8 @@
 
 | # | Criterio | Requisitos |
 |---|---|---|
-| CA1 | Para todo N en 5…7, los símbolos elegidos tienen cobertura **estrictamente creciente** y Δ ≥ 6 pp entre niveles consecutivos 1…N, y Δ ≥ 1,5 pp entre el vacío y el nivel 1. El nivel 1 es el punto central y el nivel N, la celda rellena. | RF2.3, RF2.4 |
-| CA2 | Con N < 5, N > 10 o N no entero, se lanza un error con el mensaje en español de RF1.3. | RF1.3 |
+| CA1 | Los 6 símbolos siguen el orden fijo de RF2.4: punto, /, \, X, asterisco y lleno. La cobertura es no decreciente, con igualdad solo entre / y \, y el salto vacío → punto es ≥ 1,5 pp. | RF2.3, RF2.4 |
+| CA2 | Con una cantidad de símbolos distinta de 6 (o no entera), se lanza el error en español de RF1.3. | RF1.3 |
 | CA3 | Con `quantiles`, sin reducción de ruido ni límite de oscuros, en una imagen de prueba con buen rango tonal (un degradado sintético y una foto de prueba), ningún nivel tiene menos de **X = 50 % de 100/(N+1) %** de las celdas. Es decir, X = 8,3 % para N = 5 y X = 6,25 % para N = 7. | RF3.1, RF3.7 |
 | CA4 | Para cada papel (A4, Letter, A3 y Tabloid) y cada orientación, el MediaBox del PDF mide lo indicado en RF5.1 (±0,01 pt), y el contenido (grilla y leyenda) queda dentro del área útil. | RF5.1, RF5.4 |
 | CA5 | Con `below`, si la leyenda entra: 1 página de plantilla con la leyenda incluida. Si no entra (porque con ella la celda baja de 4 mm y sin ella no): la leyenda va en una página aparte y se emite el aviso de RF6.3. | RF6.2, RF6.3 |
@@ -157,12 +153,13 @@
 
 | # | Criterio | Requisitos |
 |---|---|---|
-| CA9 | Los símbolos elegidos para cada N pertenecen a familias visuales distintas. | RF2.4c |
+| CA9 | Todos los símbolos cumplen la regla física de RF2.6 (≤ 3 trazos, o 4 radiales; ≥ 2 mm entre paralelas en 4 mm) y forman un tramado continuo entre celdas vecinas. | RF2.6 |
 | CA10 | Con el límite de oscuros en L %, el nivel N tiene ≤ L % de las celdas, también después de la reducción de ruido. | RF3.5, RF3.8 |
 | CA11 | Con la reducción de ruido activa (umbral 2), no queda ninguna celda aislada: ningún componente de tamaño 1. | RF3.4 |
 | CA12 | El núcleo se importa y genera sin que `streamlit` esté en `sys.modules`. | RNF3 |
 | CA13 | Una grilla de 100 × 140 en papel personalizado de 430 × 600 mm se genera en < 5 s. Es un test marcado `slow`, porque depende de la máquina. | RNF1 |
 | CA14 | Las celdas vacías no tienen número en la plantilla, verificado extrayendo el texto del PDF. | RF7.1 |
+| CA16 | Con el estilo de grilla `puntos`, la plantilla tiene un punto por cada esquina de celda ((cols + 1) × (filas + 1)) y ninguna línea de grilla; con `líneas`, ningún punto de grilla. | RF7.2a |
 | CA15 | Con la marca de blanco activa, la plantilla tiene un puntito gris por cada celda vacía, y la solución no tiene ninguno. Con la marca desactivada, no aparece ningún puntito. | RF7.1a, RF6.8 |
 
 ## 5. Valores propuestos para los umbrales abiertos (resumen)
