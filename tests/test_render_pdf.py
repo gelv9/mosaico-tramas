@@ -222,3 +222,16 @@ def test_ca4_papel_personalizado():
     caja = PdfReader(io.BytesIO(pdf)).pages[0].mediabox
     assert float(caja.width) == pytest.approx(mm_a_pt(300), abs=0.01)
     assert float(caja.height) == pytest.approx(mm_a_pt(400), abs=0.01)
+
+
+def test_solucion_centrada_en_la_pagina():
+    # Con la leyenda debajo, la plantilla sube la grilla; la solución la centra
+    lector, _, layout, _ = _generar(filas=20, cols=15)
+    assert layout.leyenda_en_plantilla
+    contenido = _contenido(lector, 1)
+    desplazamiento = re.search(rf"\n1 0 0 1 0 {_COORD} cm", contenido)
+    assert desplazamiento is not None
+    _, ay0, _, ay1 = layout.area_util()
+    _, gy0, _, gy1 = layout.rect_grilla
+    dy = float(desplazamiento.group(1))
+    assert (gy0 + dy) - ay0 == pytest.approx(ay1 - (gy1 + dy), abs=0.01)

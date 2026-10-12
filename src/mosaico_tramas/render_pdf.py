@@ -174,7 +174,13 @@ def _pagina_solucion(
     layout: Layout,
     config: MosaicoConfig,
 ) -> None:
-    """Resultado terminado: cada celda con su símbolo, sin números ni marcas (RF7.4)."""
+    """Resultado terminado: cada celda con su símbolo, sin números ni marcas (RF7.4).
+
+    Esta página no lleva leyenda: la grilla se centra en el área útil completa.
+    """
+    _, ay0, _, ay1 = layout.area_util()
+    _, gy0, _, gy1 = layout.rect_grilla
+    canvas.translate(0, (ay0 + ay1) / 2 - (gy0 + gy1) / 2)
     if config.grilla_en_solucion:
         _grilla(canvas, layout, GRIS_GRILLA_SOLUCION)
     for nivel, x, y in _celdas(niveles, layout):
