@@ -86,11 +86,11 @@
   - Cubre: RF6.2 y RF6.6.
   - Test: N = 6 con la marca en A4 vertical da ≈ 38,6 mm. La cantidad de entradas por fila depende del ancho útil.
 
-- [ ] **T16 — Cálculo del layout.** `calcular_layout(config, proporcion, papel, filas_fijas=None) -> Layout`: orientación, filas, celda, decisión sobre la leyenda, centrado y `bbox_contenido()`.
+- [x] **T16 — Cálculo del layout.** `calcular_layout(config, proporcion, papel, filas_fijas=None) -> Layout`: orientación, filas, celda, decisión sobre la leyenda, centrado y `bbox_contenido()`.
   - Cubre: RF4.2–RF4.7, RF6.1–RF6.5 y RF5.4.
   - Test (**CA5, CA6** a nivel de layout): `below` en un caso que entra deja la leyenda en la página de la plantilla. Si no entra, va aparte y se emite `LEYENDA_MOVIDA`. `separate` la pone siempre aparte. La celda es ≥ 4 mm, la grilla está centrada y el bbox queda dentro del área útil.
 
-- [ ] **T17 — Celda chica y sugerencias.** `CeldaDemasiadoChicaError` con las 3 sugerencias de design §7.5, más el mensaje en español.
+- [x] **T17 — Celda chica y sugerencias.** `CeldaDemasiadoChicaError` con las 3 sugerencias de design §7.5, más el mensaje en español.
   - Cubre: RF4.6, RF4.6a y RF6.4.
   - Test (**CA7**): 60 columnas en A4 dan error y no se genera nada. Las columnas sugeridas, el papel sugerido y el personalizado sugerido dan cada uno una celda ≥ 4 mm (se verifica recalculando). El mensaje contiene "4 mm" y las tres opciones. Cuando ningún papel del registro sirve, esa sugerencia se omite.
 
