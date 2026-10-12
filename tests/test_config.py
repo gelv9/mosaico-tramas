@@ -32,17 +32,17 @@ def test_defaults():
 # --- CA2: cantidad de símbolos fuera de rango o no entera ---
 
 
-@pytest.mark.parametrize("valor", [4, 7, 11, 0, -3, 5.5, True, "x", None])
+@pytest.mark.parametrize("valor", [4, 8, 11, 0, -3, 5.5, True, "x", None])
 def test_n_simbolos_invalido_mensaje_exacto(valor: object):
     with pytest.raises(ConfigInvalidaError) as info:
         MosaicoConfig.crear(n_simbolos=valor)
     esperado = (
-        f"La cantidad de símbolos debe ser un entero entre 5 y 6 (valor recibido: {valor!r})."
+        f"La cantidad de símbolos debe ser un entero entre 5 y 7 (valor recibido: {valor!r})."
     )
     assert esperado in str(info.value)
 
 
-@pytest.mark.parametrize("valor", [5, 6])
+@pytest.mark.parametrize("valor", [5, 6, 7])
 def test_n_simbolos_valido(valor: int):
     assert MosaicoConfig.crear(n_simbolos=valor).n_simbolos == valor
 

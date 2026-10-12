@@ -20,7 +20,7 @@ def _texto(lector: PdfReader) -> str:
     return "\n".join(pagina.extract_text() for pagina in lector.pages)
 
 
-@pytest.mark.parametrize("n", [5, 6])
+@pytest.mark.parametrize("n", [5, 6, 7])
 def test_hoja_para_n(n: int):
     lector = _leer(hoja_muestra(n))
     ancho, alto = REGISTRO_PAPELES["A4"].tamano_pt(Orientacion.PORTRAIT)
@@ -37,7 +37,7 @@ def test_hoja_para_n(n: int):
 def test_hoja_biblioteca_completa():
     lector = _leer(hoja_muestra(None))
     texto = _texto(lector)
-    assert len(lector.pages) >= 2
+    assert len(lector.pages) >= 1
     for simbolo in BIBLIOTECA:
         assert simbolo.id in texto
 

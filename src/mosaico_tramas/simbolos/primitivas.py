@@ -6,8 +6,8 @@ esquina inferior derecha. El renderer de PDF invierte el eje y al dibujar.
 
 from dataclasses import dataclass
 
-# Grosor del trazo relativo al lado de la celda: 0,35 mm en una celda de 5 mm (referencia RF2.3)
-TRAZO_REL = 0.07
+# Grosor del trazo relativo al lado de la celda: fibra de 0,5 mm en una celda de 4 mm (RF2.3)
+TRAZO_REL = 0.125
 
 type Coordenada = tuple[float, float]
 

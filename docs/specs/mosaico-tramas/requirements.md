@@ -36,15 +36,15 @@
 
 ### RF1 — Cantidad de símbolos configurable
 
-- **RF1.1** — THE SYSTEM SHALL permitir elegir N con **N_MIN = 5** y **N_MAX = 6** *(decidido en el checkpoint A: con solo rayas y la celda llena, 6 es el máximo que respeta saltos de 6 pp y familias distintas)*.
+- **RF1.1** — THE SYSTEM SHALL permitir elegir N con **N_MIN = 5** y **N_MAX = 7** *(decidido en el checkpoint A: con los símbolos fáciles de RF2.6 y la fibra de 0,5 mm, 7 es el máximo que respeta saltos de 6 pp y familias distintas)*.
 - **RF1.2** — THE SYSTEM SHALL generar N + 1 niveles: la celda vacía más N símbolos. La celda vacía no se cuenta dentro de N.
-- **RF1.3** — IF N < 5 o N > 6, o N no es un entero, THEN THE SYSTEM SHALL rechazar la configuración con el mensaje en español *"La cantidad de símbolos debe ser un entero entre 5 y 6 (valor recibido: X)."*
+- **RF1.3** — IF N < 5 o N > 7, o N no es un entero, THEN THE SYSTEM SHALL rechazar la configuración con el mensaje en español *"La cantidad de símbolos debe ser un entero entre 5 y 7 (valor recibido: X)."*
 
 ### RF2 — Biblioteca de símbolos distinguibles
 
-- **RF2.1** — THE SYSTEM SHALL tener una biblioteca de **al menos 14 símbolos candidatos** (propuesta). Supera ampliamente N_MAX, de modo que haya margen para elegir según la forma y la densidad.
+- **RF2.1** — THE SYSTEM SHALL tener una biblioteca de **al menos 10 símbolos candidatos** *(checkpoint A)*. Supera N_MAX, de modo que haya margen para elegir según la forma y la densidad.
 - **RF2.2** — THE SYSTEM SHALL definir cada símbolo como vector, en coordenadas normalizadas de la celda (0–1), usando solo líneas, puntos y polígonos rellenos de ReportLab. Ningún símbolo puede ser una imagen raster.
-- **RF2.3** — THE SYSTEM SHALL **medir** la cobertura de tinta de cada símbolo rasterizándolo en las condiciones de referencia (propuesta: celda de 5 mm, trazo de 0,35 mm y 400 × 400 px por celda). No se aceptan coberturas cargadas a mano.
+- **RF2.3** — THE SYSTEM SHALL **medir** la cobertura de tinta de cada símbolo rasterizándolo en las condiciones de referencia (*checkpoint A:* **fibra de 0,5 mm en una celda de 4 mm**, es decir, trazo relativo 0,125, rasterizado a 1000 × 1000 px por celda; es el útil que se recomienda en el listing). No se aceptan coberturas cargadas a mano.
 - **RF2.4** — WHEN se pide un subconjunto para N, THE SYSTEM SHALL devolver N símbolos que cumplan:
   - (a) **cobertura estrictamente creciente** del nivel 1 al nivel N;
   - (b) **diferencia mínima Δ_MIN = 6 puntos porcentuales** de cobertura entre niveles consecutivos 1…N, y **Δ_MIN_0 = 1,5 pp** entre el vacío (0 %) y el nivel 1 *(decidido, Q4a)*;
@@ -52,9 +52,9 @@
   - (d) **el nivel N es siempre la celda rellena** (cobertura 100 %) *(decidido, Q3)*;
   - (e) **el nivel 1 es siempre el punto central** *(decidido, Q4a)*. Los niveles 2…N−1 los elige el algoritmo.
 - **RF2.5** — WHEN hay más de un subconjunto válido, THE SYSTEM SHALL elegir el que **maximice la diferencia mínima** entre niveles consecutivos (máximo contraste perceptible). Los empates se resuelven de forma determinística.
-- **RF2.6** — THE SYSTEM SHALL limitar los símbolos a lo dibujable a mano: solo trazos rectos, puntos y relleno; **como máximo 6 trazos** por símbolo, donde un relleno cuenta como un trazo, y sin curvas ni detalles de menos de 1 mm a escala de referencia.
-- **RF2.6a** — THE SYSTEM SHALL usar solo **rayas** (rectas), el **punto central** y la **celda llena**. El único relleno permitido es la celda completa *(decidido en el checkpoint A: estética de tramado a pluma, fácil de trazar o rellenar)*.
-- **RF2.7** — IF para algún N entre 5 y 6 no existe un subconjunto que cumpla RF2.4, THEN THE SYSTEM SHALL fallar con un error interno explícito. Se trata de un error de la biblioteca, no del usuario, y un test lo cubre.
+- **RF2.6** — THE SYSTEM SHALL limitar los símbolos a lo dibujable a mano: solo trazos rectos, puntos y relleno; **como máximo 3 trazos** por símbolo, donde un relleno cuenta como un trazo, y **al menos 2 mm entre rayas paralelas en una celda de 4 mm**, contando también la celda vecina *(regla física, checkpoint A: reemplaza el límite anterior de 6 trazos, que permitía rejas imposibles de dibujar en 4 mm)*.
+- **RF2.6a** — THE SYSTEM SHALL usar solo **rayas** (rectas), el **punto central**, el **triángulo de media celda** (una diagonal y se rellena una mitad) y la **celda llena**. No hay otros rellenos *(decidido en el checkpoint A)*.
+- **RF2.7** — IF para algún N entre 5 y 7 no existe un subconjunto que cumpla RF2.4, THEN THE SYSTEM SHALL fallar con un error interno explícito. Se trata de un error de la biblioteca, no del usuario, y un test lo cubre.
 - **RF2.8** — THE SYSTEM SHALL poder generar una **hoja de muestra de símbolos** para un N dado: cada símbolo con su número y su cobertura medida, a escala real y ampliada.
 
 ### RF3 — Cuantización que aprovecha todos los niveles
@@ -143,9 +143,9 @@
 
 | # | Criterio | Requisitos |
 |---|---|---|
-| CA1 | Para todo N en 5…6, los símbolos elegidos tienen cobertura **estrictamente creciente** y Δ ≥ 6 pp entre niveles consecutivos 1…N, y Δ ≥ 1,5 pp entre el vacío y el nivel 1. El nivel 1 es el punto central y el nivel N, la celda rellena. | RF2.3, RF2.4 |
+| CA1 | Para todo N en 5…7, los símbolos elegidos tienen cobertura **estrictamente creciente** y Δ ≥ 6 pp entre niveles consecutivos 1…N, y Δ ≥ 1,5 pp entre el vacío y el nivel 1. El nivel 1 es el punto central y el nivel N, la celda rellena. | RF2.3, RF2.4 |
 | CA2 | Con N < 5, N > 10 o N no entero, se lanza un error con el mensaje en español de RF1.3. | RF1.3 |
-| CA3 | Con `quantiles`, sin reducción de ruido ni límite de oscuros, en una imagen de prueba con buen rango tonal (un degradado sintético y una foto de prueba), ningún nivel tiene menos de **X = 50 % de 100/(N+1) %** de las celdas. Es decir, X = 8,3 % para N = 5 y X = 7,1 % para N = 6. | RF3.1, RF3.7 |
+| CA3 | Con `quantiles`, sin reducción de ruido ni límite de oscuros, en una imagen de prueba con buen rango tonal (un degradado sintético y una foto de prueba), ningún nivel tiene menos de **X = 50 % de 100/(N+1) %** de las celdas. Es decir, X = 8,3 % para N = 5 y X = 6,25 % para N = 7. | RF3.1, RF3.7 |
 | CA4 | Para cada papel (A4, Letter, A3 y Tabloid) y cada orientación, el MediaBox del PDF mide lo indicado en RF5.1 (±0,01 pt), y el contenido (grilla y leyenda) queda dentro del área útil. | RF5.1, RF5.4 |
 | CA5 | Con `below`, si la leyenda entra: 1 página de plantilla con la leyenda incluida. Si no entra (porque con ella la celda baja de 4 mm y sin ella no): la leyenda va en una página aparte y se emite el aviso de RF6.3. | RF6.2, RF6.3 |
 | CA6 | Con `separate`, la leyenda siempre sale en su propia página. | RF6.5 |
@@ -168,12 +168,12 @@
 
 | Parámetro | Valor propuesto | Motivo |
 |---|---|---|
-| N_MAX | **6** | Decidido en el checkpoint A: solo rayas + celda llena. Las rayas finas llegan a ~38 % de tinta, y en 2–38 % solo entran 4 niveles intermedios con saltos de 6 pp. |
-| Tamaño de la biblioteca | **≥ 14** | Margen para elegir por forma y densidad. |
-| Δ_MIN de cobertura | **6 pp** (niveles 1…N); **1,5 pp** (vacío → punto) | Con 10 niveles hacen falta ≥ 60 pp de rango (0 → ~100 %), así que 6 pp es alcanzable. Además, el algoritmo maximiza el contraste por encima de ese piso. |
+| N_MAX | **7** | Checkpoint A: con los 10 símbolos fáciles y la fibra de 0,5 mm entran 7 niveles con saltos ≥ 6 pp y familias distintas. |
+| Tamaño de la biblioteca | **≥ 10** | Todos los símbolos que pasan la regla física de RF2.6. |
+| Δ_MIN de cobertura | **6 pp** (niveles 1…N); **1,5 pp** (vacío → punto) | Con N = 7 el salto mínimo real es de 8 pp, así que hay margen sobre el piso de 6 pp. |
 | Distinción de forma | Una familia visual por subconjunto | Evita pares como `/` y `//`, o `X` y `XX` (enmienda de la Fase 2). |
-| Trazos por símbolo | **≤ 6** | Se dibujan rápido con birome. |
-| Referencia de cobertura | Celda de 5 mm, trazo de 0,35 mm | Equivale a una birome o fineliner fina. |
+| Trazos por símbolo | **≤ 3**, y ≥ 2 mm entre rayas paralelas en una celda de 4 mm | Se dibujan rápido y se distinguen a mano alzada (checkpoint A). |
+| Referencia de cobertura | Fibra de 0,5 mm en una celda de 4 mm | Es el útil recomendado en el listing. Con una birome más fina el dibujo sale algo más claro. |
 | CELDA_MIN | **4 mm** (límite duro: no se genera) | Por debajo se hace difícil leer un "10" y dibujar una cruz densa. Recomendado: ≥ 5 mm. |
 | Margen por defecto | **12,7 mm (0,5")** | Seguro en impresoras hogareñas, tanto en A4 como en Letter. |
 | X de CA3 | **50 % de la cuota ideal** | Escala con N; un nivel con menos de la mitad de lo esperado se considera infrautilizado. |

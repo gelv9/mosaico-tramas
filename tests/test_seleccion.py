@@ -8,7 +8,7 @@ from mosaico_tramas.simbolos.primitivas import Simbolo
 from mosaico_tramas.simbolos.raster import cobertura
 from mosaico_tramas.simbolos.seleccion import DELTA_MIN, DELTA_MIN_0, elegir_simbolos
 
-RANGO_N = range(5, 7)
+RANGO_N = range(5, 8)
 
 
 @pytest.mark.parametrize("n", RANGO_N)
@@ -49,22 +49,15 @@ def test_determinista(n: int):
 
 
 def test_maximiza_el_salto_minimo():
-    # Con N = 5 hay más margen que con N = 6: el salto mínimo tiene que ser holgado (~10,2 pp)
+    # Con N = 5 hay mucho margen: el salto mínimo tiene que ser holgado (~15 pp)
     coberturas = [cobertura(s) for s in elegir_simbolos(5)]
     saltos = [b - a for a, b in zip(coberturas, coberturas[1:], strict=False)]
-    assert min(saltos) > 10
+    assert min(saltos) > 14
 
 
-def test_resultado_de_diseno_para_n6():
-    ids = [s.id for s in elegir_simbolos(6)]
-    assert ids == [
-        "punto",
-        "cruz",
-        "horiz3",
-        "diag3",
-        "reja2",
-        "lleno",
-    ]
+def test_resultado_de_diseno_para_n7():
+    ids = [s.id for s in elegir_simbolos(7)]
+    assert ids == ["punto", "horiz1", "cruz", "aspa1", "estrella", "triangulo", "lleno"]
 
 
 def test_biblioteca_imposible_lanza_error():
@@ -79,9 +72,9 @@ def test_biblioteca_imposible_lanza_error():
         elegir_simbolos(5, chica)
 
 
-@pytest.mark.parametrize("n", [4, 7])
+@pytest.mark.parametrize("n", [4, 8])
 def test_n_fuera_de_rango(n: int):
-    with pytest.raises(ConfigInvalidaError, match="entre 5 y 6"):
+    with pytest.raises(ConfigInvalidaError, match="entre 5 y 7"):
         elegir_simbolos(n)
 
 

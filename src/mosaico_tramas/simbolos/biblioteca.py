@@ -1,7 +1,8 @@
 """Catálogo de símbolos candidatos (design.md §4.2).
 
-Solo rayas, el punto central y la celda llena (decisión del checkpoint A): fáciles de trazar
-o de rellenar a mano, con estética de tramado a pluma.
+Solo símbolos fáciles a mano (checkpoint A): como máximo 3 trazos y al menos 2 mm entre rayas
+paralelas en una celda de 4 mm. Los únicos rellenos son la celda llena y el triángulo de media
+celda (una diagonal y se rellena una mitad).
 
 Convención: coordenadas normalizadas con y hacia abajo. Una diagonal "/" va de la esquina
 inferior izquierda (0, 1) a la superior derecha (1, 0), es decir, x + y = c. Una "\\" cumple
@@ -37,11 +38,8 @@ def vertical(x: float) -> Linea:
     return Linea((x, 0.0), (x, 1.0))
 
 
-# Posiciones con espaciado parejo también entre celdas vecinas (el tramado no se corta)
-_DOS = (0.25, 0.75)
-_TRES = (1 / 6, 0.5, 5 / 6)
-_DIAG_X2 = (0.5, 1.0, 1.5)  # doble densidad de diagonales
-_DIAG_X3 = (1 / 3, 2 / 3, 1.0, 4 / 3, 5 / 3)  # triple densidad
+_TRIANGULO = Poligono(((0.0, 0.0), (0.0, 1.0), (1.0, 1.0)))  # ◣ mitad inferior izquierda
+_LLENO = Poligono(((0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)))
 
 
 def _s(id_: str, familia: str, nombre_en: str, *primitivas: Linea | Punto | Poligono) -> Simbolo:
@@ -50,53 +48,16 @@ def _s(id_: str, familia: str, nombre_en: str, *primitivas: Linea | Punto | Poli
 
 BIBLIOTECA: tuple[Simbolo, ...] = (
     _s("punto", "punto", "center dot", Punto(0.08)),
-    _s("diag1", "diagonal", "one diagonal", diagonal(1.0)),
-    _s("diag2", "diagonal", "double diagonals", *(diagonal(c) for c in _DIAG_X2)),
-    _s("diag3", "diagonal", "triple diagonals", *(diagonal(c) for c in _DIAG_X3)),
-    _s("horiz1", "horizontal", "one horizontal", horizontal(0.5)),
-    _s("horiz2", "horizontal", "two horizontals", *(horizontal(y) for y in _DOS)),
-    _s("horiz3", "horizontal", "three horizontals", *(horizontal(y) for y in _TRES)),
-    _s("vert1", "vertical", "one vertical", vertical(0.5)),
+    _s("horiz1", "horizontal", "horizontal line", horizontal(0.5)),
+    _s("vert1", "vertical", "vertical line", vertical(0.5)),
+    _s("diag1", "diagonal", "diagonal line", diagonal(1.0)),
     _s("cruz", "cruz", "plus", horizontal(0.5), vertical(0.5)),
+    # Dos horizontales a ¼ y ¾: 2 mm entre sí y contra la celda vecina en una celda de 4 mm
+    _s("horiz2", "horizontal", "two horizontal lines", horizontal(0.25), horizontal(0.75)),
     _s("aspa1", "aspa", "cross", diagonal(1.0), antidiagonal(0.0)),
-    _s(
-        "aspa2",
-        "aspa",
-        "double diagonals with cross",
-        *(diagonal(c) for c in _DIAG_X2),
-        antidiagonal(0.0),
-    ),
-    _s(
-        "aspa3",
-        "aspa",
-        "dense cross-hatch",
-        *(diagonal(c) for c in _DIAG_X2),
-        *(antidiagonal(c - 1) for c in _DIAG_X2),
-    ),
-    _s(
-        "reja1",
-        "reja",
-        "grid",
-        *(horizontal(y) for y in _DOS),
-        *(vertical(x) for x in _DOS),
-    ),
-    _s(
-        "reja2",
-        "reja",
-        "dense grid",
-        *(horizontal(y) for y in _TRES),
-        *(vertical(x) for x in _TRES),
-    ),
-    _s(
-        "asterisco",
-        "asterisco",
-        "asterisk",
-        horizontal(0.5),
-        vertical(0.5),
-        diagonal(1.0),
-        antidiagonal(0.0),
-    ),
-    _s("lleno", "lleno", "solid", Poligono(((0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)))),
+    _s("estrella", "estrella", "star", diagonal(1.0), antidiagonal(0.0), horizontal(0.5)),
+    _s("triangulo", "triangulo", "half triangle", _TRIANGULO),
+    _s("lleno", "lleno", "solid", _LLENO),
 )
 
 POR_ID: dict[str, Simbolo] = {s.id: s for s in BIBLIOTECA}

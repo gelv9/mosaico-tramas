@@ -19,7 +19,7 @@ from mosaico_tramas.papel import (
 )
 
 N_MIN = 5
-N_MAX = 6
+N_MAX = 7
 
 
 class MetodoCuantizacion(StrEnum):

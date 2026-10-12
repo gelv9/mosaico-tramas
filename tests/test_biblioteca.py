@@ -9,26 +9,20 @@ from mosaico_tramas.simbolos.raster import cobertura
 # Coberturas de design.md §4.2 (%)
 COBERTURAS_DISENO = {
     "punto": 2.0,
-    "diag1": 9.9,
-    "diag2": 19.7,
-    "diag3": 29.5,
-    "horiz1": 7.1,
-    "horiz2": 14.3,
-    "horiz3": 21.4,
-    "vert1": 7.1,
-    "cruz": 13.8,
-    "aspa1": 19.3,
-    "aspa2": 28.1,
-    "aspa3": 36.5,
-    "reja1": 26.5,
-    "reja2": 38.3,
-    "asterisco": 31.6,
+    "horiz1": 12.5,
+    "vert1": 12.5,
+    "diag1": 17.2,
+    "cruz": 23.4,
+    "horiz2": 25.0,
+    "aspa1": 32.1,
+    "estrella": 41.7,
+    "triangulo": 50.0,
     "lleno": 100.0,
 }
 
 
-def test_al_menos_14_candidatos_con_ids_unicos():
-    assert len(BIBLIOTECA) >= 14
+def test_al_menos_10_candidatos_con_ids_unicos():
+    assert len(BIBLIOTECA) >= 10
     assert len(POR_ID) == len(BIBLIOTECA)
 
 
@@ -40,8 +34,8 @@ def test_extremos_fijos_existen():
 
 @pytest.mark.parametrize("simbolo", BIBLIOTECA, ids=lambda s: s.id)
 def test_dibujable_a_mano(simbolo):
-    # RF2.6: como máximo 6 trazos, solo rectas, puntos y rellenos
-    assert 1 <= simbolo.trazos <= 6
+    # RF2.6: como máximo 3 trazos, solo rectas, puntos y rellenos
+    assert 1 <= simbolo.trazos <= 3
     for primitiva in simbolo.primitivas:
         assert isinstance(primitiva, Linea | Punto | Poligono)
 
@@ -66,13 +60,11 @@ def test_cobertura_coincide_con_el_diseno(simbolo):
     assert cobertura(simbolo) == pytest.approx(COBERTURAS_DISENO[simbolo.id], abs=1.0)
 
 
-def test_solo_rayas_punto_y_celda_llena():
-    # Decisión del checkpoint A: el único relleno es la celda completa
+def test_rellenos_solo_celda_llena_y_triangulo():
+    # RF2.6a: los únicos rellenos son la celda completa y el triángulo de media celda
     for simbolo in BIBLIOTECA:
-        if simbolo.id == ID_LLENO:
-            continue
-        for primitiva in simbolo.primitivas:
-            assert not isinstance(primitiva, Poligono), simbolo.id
+        if any(isinstance(p, Poligono) for p in simbolo.primitivas):
+            assert simbolo.id in {ID_LLENO, "triangulo"}, simbolo.id
 
 
 def test_cada_simbolo_tiene_familia_y_nombre_en_ingles():
@@ -142,3 +134,27 @@ def test_espaciado_parejo_entre_celdas(simbolo):
             1 - orden[-1] + orden[0]
         ]
         assert max(saltos) - min(saltos) < 1e-4, f"{simbolo.id} {d}: espaciado {saltos}"
+
+
+# --- Regla física de dibujabilidad (RF2.6) ---
+
+CELDA_MIN_MM = 4.0
+SEPARACION_MIN_MM = 2.0
+
+
+@pytest.mark.parametrize("simbolo", BIBLIOTECA, ids=lambda s: s.id)
+def test_rayas_paralelas_separadas_al_menos_2_mm_en_celda_de_4_mm(simbolo):
+    """Entre rayas paralelas (también contra la celda vecina) quedan al menos 2 mm."""
+    por_direccion: dict[tuple[float, float], set[float]] = {}
+    for linea in _lineas(simbolo):
+        d, pos = _desplazamiento(linea)
+        por_direccion.setdefault(d, set()).add(round(pos % 1.0, 6) % 1.0)
+    for d, posiciones in por_direccion.items():
+        orden = sorted(posiciones)
+        saltos = [b - a for a, b in zip(orden, orden[1:], strict=False)] + [
+            1 - orden[-1] + orden[0]
+        ]
+        # En diagonales la posición se mide en x ± y: la distancia perpendicular es salto / √2
+        factor = 1.0 if d in ((1.0, 0.0), (0.0, 1.0), (0.0, -1.0)) else 2**-0.5
+        separacion_mm = min(saltos) * factor * CELDA_MIN_MM
+        assert separacion_mm >= SEPARACION_MIN_MM - 1e-6, f"{simbolo.id}: {separacion_mm:.2f} mm"

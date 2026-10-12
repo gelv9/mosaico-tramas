@@ -13,9 +13,9 @@ from mosaico_tramas.simbolos.seleccion import elegir_simbolos
 
 _MARGEN = mm_a_pt(12.7)
 _ALTO_FILA = mm_a_pt(24)
-_CELDA_REF = mm_a_pt(5)  # escala de referencia de la cobertura
+_CELDA_REF = mm_a_pt(4)  # celda mínima: escala de referencia de la cobertura
 _CELDA_GRANDE = mm_a_pt(20)
-_PARCHE_CELDAS = 4  # parche de 4 × 4 celdas de 5 mm para ver cómo tramea
+_PARCHE_CELDAS = 5  # parche de 5 × 5 celdas de 4 mm para ver cómo tramea
 _GRIS_GRILLA = 0.65
 
 
@@ -43,7 +43,8 @@ def hoja_muestra(n: int | None) -> bytes:
         canvas.drawString(
             _MARGEN,
             y - 28,
-            "Columns: level, id (family), ink coverage, 5 mm cell, 20 mm cell, 4x4 patch at 5 mm.",
+            "Columns: level, id (family), ink coverage (0.5 mm pen), 4 mm cell, 20 mm cell, "
+            "5x5 patch at 4 mm.",
         )
         y -= mm_a_pt(16)
         for indice, simbolo in enumerate(simbolos[inicio : inicio + filas_por_pagina], inicio):

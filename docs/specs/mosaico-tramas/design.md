@@ -97,7 +97,7 @@ class PapelPersonalizado(BaseModel, frozen=True):
 
 
 class MosaicoConfig(BaseModel, frozen=True):
-    n_simbolos: int = 6  # 5..6 (RF1)
+    n_simbolos: int = 6  # 5..7 (RF1)
     columnas: int = 40  # 10..200 (RF4.1)
     metodo: MetodoCuantizacion = QUANTILES
     reduccion_ruido: bool = True
@@ -133,34 +133,28 @@ class MosaicoConfig(BaseModel, frozen=True):
 @dataclass(frozen=True) class Simbolo:  id: str; familia: str; primitivas: tuple[Primitiva, ...]; nombre_en: str
 ```
 
-- **Grosor del trazo:** `TRAZO_REL = 0.07` × el lado de la celda. Equivale a 0,35 mm en una celda de 5 mm (la referencia de RF2.3). Escala con la celda (Q2).
+- **Grosor del trazo:** `TRAZO_REL = 0.125` × el lado de la celda. Equivale a una fibra de 0,5 mm en una celda de 4 mm (la referencia de RF2.3). Escala con la celda (Q2).
 - **Medición de la cobertura (RF2.3):** rasterizado con OpenCV a 1000 × 1000 px, antialiasing y recorte a la celda; la cobertura es la media de la tinta. Se calcula una vez y se cachea con `lru_cache`. Ningún valor se carga a mano.
 - **Un solo origen de la geometría.** Las primitivas son la única fuente: tanto ReportLab como OpenCV dibujan a partir de ellas, así que la cobertura medida y lo que se imprime coinciden.
 
-### 4.2 Catálogo (16 candidatos en 9 familias: solo rayas, punto y celda llena)
+### 4.2 Catálogo (10 candidatos, coberturas medidas con fibra de 0,5 mm en celda de 4 mm)
 
-Las líneas van de borde a borde de la celda y con **espaciado parejo también entre celdas vecinas**, para que en zonas parejas formen un tramado continuo, como en un grabado. Esto lo verifica un test geométrico (ver la corrección durante la T7).
+Todos los símbolos pasan la regla física de RF2.6: como máximo 3 trazos y al menos 2 mm entre rayas paralelas en una celda de 4 mm, contando la celda vecina. Las rayas van de borde a borde y con espaciado parejo entre celdas vecinas, para que las zonas parejas formen un tramado continuo. Tests geométricos verifican las dos cosas.
 
 | id | familia | boceto | trazos | cobertura |
 |---|---|---|---|---|
-| `punto` | punto | `·····` `·····` `··●··` `·····` `·····` | 1 | **2,0 %** |
-| `diag1` | diagonal | `/` de esquina a esquina | 1 | 9,9 % |
-| `diag2` | diagonal | `///` doble densidad (x+y = ½, 1, 3⁄2) | 3 | 19,7 % |
-| `diag3` | diagonal | triple densidad (x+y = ⅓ … 5⁄3) | 5 | 29,5 % |
-| `horiz1` | horizontal | `—` al centro | 1 | 7,1 % |
-| `horiz2` | horizontal | `=` (a ¼ y ¾) | 2 | 14,3 % |
-| `horiz3` | horizontal | `≡` (a ⅙, ½ y ⅚) | 3 | 21,4 % |
-| `vert1` | vertical | `│` al centro | 1 | 7,1 % |
-| `cruz` | cruz | `+` | 2 | 13,8 % |
-| `aspa1` | aspa | `X` de esquina a esquina | 2 | 19,3 % |
-| `aspa2` | aspa | `diag2` + una `\` central | 4 | 28,1 % |
-| `aspa3` | aspa | trama cruzada densa: 3 `/` + 3 `\` | 6 | 36,5 % |
-| `reja1` | reja | `#` (a ¼ y ¾) | 4 | 26,5 % |
-| `reja2` | reja | reja densa (a ⅙, ½ y ⅚) | 6 | 38,2 % |
-| `asterisco` | asterisco | `+` + `X` | 4 | 31,6 % |
+| `punto` | punto | punto central (diámetro ≈ 0,64 mm en 4 mm) | 1 | **2,0 %** |
+| `horiz1` | horizontal | `—` al centro | 1 | 12,6 % |
+| `vert1` | vertical | `│` al centro | 1 | 12,6 % |
+| `diag1` | diagonal | `/` de esquina a esquina | 1 | 17,0 % |
+| `cruz` | cruz | `+` | 2 | 23,7 % |
+| `horiz2` | horizontal | `=` (a ¼ y ¾: 2 mm entre sí y contra la vecina) | 2 | 25,3 % |
+| `aspa1` | aspa | `X` de esquina a esquina | 2 | 32,4 % |
+| `estrella` | estrella | `X` + `—` (6 puntas) | 3 | 42,0 % |
+| `triangulo` | triangulo | ◣ una diagonal y se rellena la mitad inferior izquierda | 2 | 50,1 % |
 | `lleno` | lleno | celda rellena | 1 | **100 %** |
 
-Todos los símbolos cumplen RF2.6 y RF2.6a: solo rectas, el punto central y la celda llena, como máximo 6 trazos. *Checkpoint A:* se quitaron los rellenos parciales (bloque, triángulos, tres cuartos, esquina, mitad), porque repetidos se leían como mosaico geométrico y no como tramado a pluma.
+*Historia (checkpoint A):* la primera biblioteca tenía 23 símbolos con hasta 6 trazos y un trazo de 0,35 mm. Se descartó por dos motivos: los rellenos parciales repetidos se leían como mosaico geométrico, y las rejas o diagonales densas eran imposibles de dibujar en 4 mm. El triángulo volvió a pedido del usuario, porque es fácil de hacer.
 
 ### 4.3 Enmienda a RF2.4c (distinción de forma) — aprobada
 
@@ -171,10 +165,10 @@ Con el prototipo comprobé que la regla aprobada, **1 − IoU ≥ 0,35**, es **i
 ### 4.4 Algoritmo de selección del subconjunto (RF2.4 y RF2.5)
 
 ```
-entrada: N (5..6)
+entrada: N (5..7)
 fijos:   nivel 1 = punto, nivel N = lleno           (RF2.4e, RF2.4d)
 candidatos = biblioteca − {punto, lleno}, ordenados por (cobertura, id)
-para cada combinación C de N−2 candidatos:          # como mucho C(14,4) = 1001; se poda por familia y gaps
+para cada combinación C de N−2 candidatos:          # como mucho C(8,5) = 56; se poda por familia y gaps
     si hay familias repetidas en C → descartar
     secuencia = [punto, *C ordenada por cobertura, lleno]
     gaps = diferencias consecutivas de cobertura
@@ -188,8 +182,9 @@ elegir la mejor clave; si no hay ninguna → ErrorBibliotecaSimbolos (RF2.7)
 
 | N | gap mín. | niveles 1…N (resultado real de `elegir_simbolos`) |
 |---|---|---|
-| 5 | 10,2 | punto 2 · cruz 14 · aspa2 28 · reja2 38 · lleno 100 |
-| 6 | 7,6 | punto 2 · cruz 14 · horiz3 21 · diag3 29 · reja2 38 · lleno 100 |
+| 5 | 15,0 | punto 2 · diag1 17 · aspa1 32 · triangulo 50 · lleno 100 |
+| 6 | 8,8 | punto 2 · horiz1 13 · cruz 24 · aspa1 32 · triangulo 50 · lleno 100 |
+| 7 | 8,1 | punto 2 · horiz1 13 · cruz 24 · aspa1 32 · estrella 42 · triangulo 50 · lleno 100 |
 
 ## 5. Preprocesamiento (`imagen.py`)
 
@@ -322,7 +317,7 @@ def empaquetar_zip(resultado: Resultado, nombre_base: str) -> bytes        # RF5
 
 ## 11. Hoja de muestra (`muestra.py`, RF2.8)
 
-`hoja_muestra(n: int | None) -> bytes` genera un PDF A4. Con un `n`, muestra los N símbolos elegidos con su número, su cobertura medida, una celda a 5 mm (escala de referencia) y otra a 20 mm. Con `None`, muestra la biblioteca completa agrupada por familia. Se usa en la Fase 5 con N = 5 y 6.
+`hoja_muestra(n: int | None) -> bytes` genera un PDF A4. Con un `n`, muestra los N símbolos elegidos con su número, su cobertura medida, una celda a 5 mm (escala de referencia) y otra a 20 mm. Con `None`, muestra la biblioteca completa agrupada por familia. Se usa en la Fase 5 con N = 5, 6 y 7.
 
 ## 12. Flujo de la UI (`ui/app.py`)
 
@@ -369,5 +364,5 @@ def empaquetar_zip(resultado: Resultado, nombre_base: str) -> bytes        # RF5
 | Distinción de forma | Se reemplaza 1−IoU por familias distintas (§4.3). Aprobado. |
 | Sin scikit-learn | El k-means 1D sobre el histograma es propio, exacto y determinista. |
 | Rendimiento del PDF | Un path por nivel en la solución; la grilla con líneas largas y no con rectángulos por celda. |
-| Escala de la cobertura | Se mide con un trazo relativo (0,07). En celdas más grandes, la birome del comprador cubre proporcionalmente menos y los tonos se aclaran algo. Por eso se recomienda un fineliner de 0,3–0,5 mm. Esto se puede documentar en el listing. |
-| Tiempo de rasterizado de la cobertura | 16 símbolos a 1000 px, ~50 ms en total, una sola vez (cacheado). |
+| Escala de la cobertura | Se mide con la fibra de 0,5 mm en 4 mm (trazo relativo 0,125). En celdas más grandes, o con una birome más fina, los tonos salen algo más claros. Por eso el listing recomienda una fibra de 0,5 mm. |
+| Tiempo de rasterizado de la cobertura | 10 símbolos a 1000 px, ~50 ms en total, una sola vez (cacheado). |

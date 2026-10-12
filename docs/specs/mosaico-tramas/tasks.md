@@ -26,19 +26,19 @@
   - Cubre: RF2.2 y RF2.3.
   - Test: `test_raster.py`. La celda llena da 100 %, la vacía 0 % y una línea horizontal ≈ `TRAZO_REL` (±0,3 pp). Un triángulo de media celda da ≈ 50 %, y el rasterizado es determinista.
 
-- [x] **T5 — Biblioteca.** `simbolos/biblioteca.py`: los símbolos de design.md §4.2 (16 tras el checkpoint A: solo rayas, punto y lleno), con familia y `nombre_en`.
+- [x] **T5 — Biblioteca.** `simbolos/biblioteca.py`: los símbolos de design.md §4.2 (10 tras el checkpoint A: símbolos fáciles con regla física), con familia y `nombre_en`.
   - Cubre: RF2.1, RF2.2 y RF2.6.
   - Test: `test_biblioteca.py`. Hay ≥ 14 candidatos y los ids son únicos. Cada símbolo tiene ≤ 6 trazos, coordenadas en [0, 1], está compuesto solo de `Linea`, `Punto` o `Poligono`, y existen `punto` y `lleno`. Las coberturas medidas quedan a ±1 pp de la tabla de diseño.
 
 - [x] **T6 — Selección del subconjunto.** `simbolos/seleccion.py`: `elegir_simbolos(n)` por backtracking con poda y cache.
   - Cubre: RF2.4 (a–e), RF2.5 y RF2.7.
-  - Test: `test_seleccion.py` (**CA1, CA9**). Para N = 5…6: cobertura estrictamente creciente, Δ ≥ 6 pp entre los niveles 1…N, Δ ≥ 1,5 pp entre el vacío y el nivel 1, nivel 1 = punto, nivel N = lleno, familias distintas y mismo resultado en dos llamadas. Con una biblioteca imposible (inyectada) se lanza `ErrorBibliotecaSimbolos`.
+  - Test: `test_seleccion.py` (**CA1, CA9**). Para N = 5…7: cobertura estrictamente creciente, Δ ≥ 6 pp entre los niveles 1…N, Δ ≥ 1,5 pp entre el vacío y el nivel 1, nivel 1 = punto, nivel N = lleno, familias distintas y mismo resultado en dos llamadas. Con una biblioteca imposible (inyectada) se lanza `ErrorBibliotecaSimbolos`.
 
 - [x] **T7 — Hoja de muestra.** `muestra.py`: `hoja_muestra(n | None) -> bytes` (PDF A4).
   - Cubre: RF2.8.
   - Test: `test_muestra.py`. El PDF es válido (pypdf), mide A4, su texto contiene los ids o números y las coberturas, y la salida es determinista.
 
-> 🛑 **Checkpoint A.** Muestro las hojas de muestra para N = 5, 7 y 10, y la biblioteca completa. **Resultado:** el usuario eligió solo rayas + celda llena, así que N_MAX pasa a 6.
+> 🛑 **Checkpoint A.** Muestro las hojas de muestra para N = 5, 7 y 10, y la biblioteca completa. **Resultado:** biblioteca de 10 símbolos fáciles (≤ 3 trazos, ≥ 2 mm entre rayas en 4 mm), con triángulo y celda llena, fibra de 0,5 mm y N_MAX = 7.
 
 ---
 
@@ -54,7 +54,7 @@
 
 - [ ] **T10 — Cuantización por cuantiles.** `cuantizacion.py`: histograma de 4096 bins, cuotas objetivo (con y sin límite de oscuros), cortes estrictamente crecientes y `aplicar_cortes`.
   - Cubre: RF3.1, RF3.2, RF3.3 y RF3.5 (vía cuotas).
-  - Test: `test_cuantizacion.py` (**CA3**). Con el degradado y la foto sintética, para N = 5…6, ningún nivel tiene menos de 0,5·100/(N+1) %. Las celdas idénticas comparten nivel. Con el límite en L %, el nivel N queda ≤ L % y los demás quedan ≈ parejos.
+  - Test: `test_cuantizacion.py` (**CA3**). Con el degradado y la foto sintética, para N = 5…7, ningún nivel tiene menos de 0,5·100/(N+1) %. Las celdas idénticas comparten nivel. Con el límite en L %, el nivel N queda ≤ L % y los demás quedan ≈ parejos.
 
 - [ ] **T11 — K-means y uniforme.** k-means 1D ponderado sobre el histograma, inicializado con los cuantiles, más el re-sembrado de clusters vacíos, y `uniform`.
   - Cubre: RF3.1 y RNF2.
@@ -146,7 +146,7 @@
 ## Fase 5 — Verificación (después del Checkpoint D)
 
 - [ ] **V1** — `pytest` completo, incluido `-m slow`, y `ruff check`.
-- [ ] **V2** — Hojas de muestra de símbolos para N = 5 y 6 (N_MAX = 6 desde el checkpoint A).
+- [ ] **V2** — Hojas de muestra de símbolos para N = 5, 6 y 7 (N_MAX = 7 desde el checkpoint A).
 - [ ] **V3** — *(pedir al usuario: un retrato, una mascota y un paisaje)*. Para cada imagen: PDFs en A4 y Letter × leyenda `below` / `separate`, más el PNG.
 - [ ] **V4** — Informe: cada CA con su estado (cumple / no cumple / parcial), observaciones visuales y ajustes propuestos.
 
