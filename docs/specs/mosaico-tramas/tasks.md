@@ -48,7 +48,7 @@
   - Cubre: RP1–RP6 y RF4.3/RF4.4 (el recorte).
   - Test: `test_imagen.py`. Un PNG con alfa se compone sobre blanco y una imagen rotada por EXIF queda bien orientada. Bytes basura dan `ImagenInvalidaError` en español, igual que un archivo mayor al límite. La forma de la salida es la pedida. El estiramiento lleva p2→0 y p98→1, y una imagen plana emite `POCO_RANGO_TONAL`. `center` recorta al centro.
 
-- [ ] **T9 — Fixtures de imágenes sintéticas.** En `tests/conftest.py`: un degradado, una "foto" sintética (degradado radial, formas y ruido con semilla fija), una imagen con un fondo blanco plano y una imagen plana.
+- [x] **T9 — Fixtures de imágenes sintéticas.** En `tests/conftest.py`: un degradado, una "foto" sintética (degradado radial, formas y ruido con semilla fija), una imagen con un fondo blanco plano y una imagen plana.
   - Cubre: soporte para CA3 y CA8.
   - Test: las fixtures son deterministas, porque el hash de los bytes es estable.
 
