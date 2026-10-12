@@ -161,7 +161,7 @@ Bocetos en una grilla de 5 × 5 caracteres (`█` = tinta). Las líneas van de b
 | `bloque50` | bloque | cuadrado relleno centrado, de lado 0,5 | 1 | 25,1 % |
 | `bloque60` | bloque | cuadrado relleno centrado, de lado 0,6 | 1 | 36,2 % |
 | `triangulo` | triangulo | mitad inferior izquierda rellena (◣) | 1 | 50,1 % |
-| `tri_rayas` | triangulo_rayado | ◣ + 2 `/` en la mitad libre | 3 | 55,0 % |
+| `tri_rayas` | triangulo_rayado | ◣ + 2 `` paralelas a la hipotenusa, en la mitad libre | 3 | 59,9 % (corregido en T5: el prototipo cruzaba las rayas sobre el triángulo) |
 | `mitad_rayas` | mitad | mitad inferior rellena + 2 horizontales arriba | 3 | 64,3 % |
 | `tres_cuartos` | tres_cuartos | todo relleno salvo el cuadrante superior derecho | 1 | 75,1 % |
 | `esquina` | esquina | todo relleno salvo un triangulito en la esquina superior derecha | 1 | 87,5 % |

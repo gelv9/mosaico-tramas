@@ -26,7 +26,7 @@
   - Cubre: RF2.2 y RF2.3.
   - Test: `test_raster.py`. La celda llena da 100 %, la vacía 0 % y una línea horizontal ≈ `TRAZO_REL` (±0,3 pp). Un triángulo de media celda da ≈ 50 %, y el rasterizado es determinista.
 
-- [ ] **T5 — Biblioteca.** `simbolos/biblioteca.py`: los 23 símbolos de design.md §4.2, con familia y `nombre_en`.
+- [x] **T5 — Biblioteca.** `simbolos/biblioteca.py`: los 23 símbolos de design.md §4.2, con familia y `nombre_en`.
   - Cubre: RF2.1, RF2.2 y RF2.6.
   - Test: `test_biblioteca.py`. Hay ≥ 14 candidatos y los ids son únicos. Cada símbolo tiene ≤ 6 trazos, coordenadas en [0, 1], está compuesto solo de `Linea`, `Punto` o `Poligono`, y existen `punto` y `lleno`. Las coberturas medidas quedan a ±1 pp de la tabla de diseño.
 
