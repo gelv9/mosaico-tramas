@@ -16,7 +16,7 @@ from mosaico_tramas.simbolos.raster import rasterizar
 
 TILE_MIN_PX = 4
 # Grises en escala 0–255 (equivalentes a los del PDF)
-GRIS_GRILLA = 166  # 35 % de negro
+GRIS_GRILLA = 209  # 18 % de negro (igual que el PDF)
 GRIS_NUMEROS = 128  # 50 % de negro
 
 type Imagen = npt.NDArray[np.uint8]

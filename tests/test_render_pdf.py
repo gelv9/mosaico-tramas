@@ -88,7 +88,7 @@ def test_ca15_sin_marca_no_hay_puntitos():
 def test_numeros_y_grilla_en_gris():
     lector, _, _, _ = _generar()
     contenido = _contenido(lector, 0)
-    assert ".65 G" in contenido  # trazo de la grilla al 35 % de negro
+    assert ".82 G" in contenido  # trazo de la grilla al 18 % de negro (gris muy claro)
     assert ".5 g" in contenido  # relleno de los números al 50 % de negro
 
 

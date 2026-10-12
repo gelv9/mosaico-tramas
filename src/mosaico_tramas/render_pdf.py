@@ -33,9 +33,9 @@ from mosaico_tramas.simbolos.primitivas import TRAZO_REL, Linea, Poligono, Punto
 TITULO_PDF = "Hatch Mosaic"
 
 # Grises de la plantilla (RF7.2): 0 = negro, 1 = blanco
-GRIS_GRILLA = 0.65  # 35 % de negro
+GRIS_GRILLA = 0.82  # 18 % de negro: gris muy claro, no afecta el dibujo final
 GRIS_NUMEROS = 0.5  # 50 % de negro
-GRIS_GRILLA_SOLUCION = 0.85
+GRIS_GRILLA_SOLUCION = 0.90  # 10 % de negro
 ANCHO_LINEA_GRILLA = 0.3
 FUENTE = "Helvetica"
 FUENTE_NEGRITA = "Helvetica-Bold"

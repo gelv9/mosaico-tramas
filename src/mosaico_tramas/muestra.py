@@ -16,7 +16,7 @@ _ALTO_FILA = mm_a_pt(24)
 _CELDA_REF = mm_a_pt(4)  # celda mínima: escala de referencia de la cobertura
 _CELDA_GRANDE = mm_a_pt(20)
 _PARCHE_CELDAS = 5  # parche de 5 × 5 celdas de 4 mm para ver cómo tramea
-_GRIS_GRILLA = 0.65
+_GRIS_GRILLA = 0.82
 
 
 def hoja_muestra(n: int | None) -> bytes:
