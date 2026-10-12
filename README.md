@@ -1,7 +1,7 @@
 # Mosaico por tramas
 
-Genera una grilla numerada en la que cada número corresponde a un símbolo (punto, rayas, cruz,
-X, estrella, triángulo, celda llena). Al dibujar los símbolos aparece la imagen con efecto de
+Genera una grilla numerada en la que cada número corresponde a un símbolo (punto, diagonales,
+X, asterisco, celda llena). Al dibujar los símbolos aparece la imagen con efecto de
 grabado a pluma. La salida es un PDF vectorial imprimible (plantilla, leyenda y solución) y un
 PNG de preview para el listing.
 
@@ -43,8 +43,7 @@ streamlit run src/mosaico_tramas/ui/app.py
 
 | Parámetro | Valores | Notas |
 |---|---|---|
-| Símbolos | 5 a 7 (5 a 6 sin triángulo) | El nivel 1 es siempre el punto y el último, la celda llena. |
-| Usar triángulo | sí / no | Sin él la escala es más "de línea"; con él hay un tono más. |
+| Símbolos | 6 fijos (estilo clásico) | 1 punto · 2 / · 3 \ · 4 X · 5 asterisco · 6 celda llena. / y \ comparten tono. |
 | Columnas | 10 a 200 | Las filas salen de la proporción de la imagen. |
 | Método | cuantiles (recomendado), k-means, uniforme | Cuantiles reparte las celdas parejo entre niveles. |
 | Reducir ruido | umbral 2 a 20 celdas | Elimina zonas más chicas que el umbral. |
@@ -53,6 +52,7 @@ streamlit run src/mosaico_tramas/ui/app.py
 | Orientación | automática, vertical, horizontal | La automática sigue la proporción de la imagen. |
 | Márgenes | 5 a 40 mm (por defecto 12,7 mm) | Seguro para impresoras hogareñas. |
 | Rellenar la hoja | sí / no | Sí: recorta la imagen al centro para llenar la hoja. |
+| Estilo de grilla | líneas / puntos en las esquinas | Gris muy claro (18 %) para que no se note en el dibujo final. |
 | Leyenda | debajo / en hoja aparte | Si no entra debajo, pasa sola a una hoja aparte con un aviso. |
 
 **Celda mínima de 4 mm.** Por debajo de 4 mm no se genera nada: la app explica por qué y
@@ -69,7 +69,7 @@ fina el dibujo sale algo más claro.
 from mosaico_tramas.config import MosaicoConfig
 from mosaico_tramas.pipeline import empaquetar_zip, generar_mosaico
 
-config = MosaicoConfig.crear(columnas=40, papeles=["A4", "LETTER"], n_simbolos=6)
+config = MosaicoConfig.crear(columnas=45, papeles=["A4", "LETTER"], estilo_grilla="dots")
 resultado = generar_mosaico(open("perro.jpg", "rb").read(), config)
 open("perro.zip", "wb").write(empaquetar_zip(resultado, "perro"))
 ```
